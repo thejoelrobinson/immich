@@ -1,6 +1,6 @@
 <script lang="ts">
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { Card, CardBody, CardHeader, Heading, VStack } from '@immich/ui';
+  import { Card, CardBody, CardHeader, Heading, VStack } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
     title?: string;

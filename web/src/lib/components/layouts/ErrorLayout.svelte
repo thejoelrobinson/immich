@@ -1,7 +1,7 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { Icon, IconButton } from '@immich/ui';
+  import { Icon, IconButton } from '@immich/ui';
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 

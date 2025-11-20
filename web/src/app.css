@@ -114,8 +114,9 @@
 
 @layer utilities {
   :root {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-                 Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+      'Segoe UI Emoji';
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: calc(4.5rem + 4px);
     --navbar-height-md: calc(4.5rem + 4px - 14px);

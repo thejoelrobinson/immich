@@ -29,11 +29,7 @@
 </script>
 
 <th class="text-sm font-medium {option.columnStyle}">
-  <button
-    type="button"
-    class="rounded-lg p-2 hover:bg-sky-blue hover:dark:bg-sky-blue/50"
-    onclick={handleSort}
-  >
+  <button type="button" class="rounded-lg p-2 hover:bg-sky-blue hover:dark:bg-sky-blue/50" onclick={handleSort}>
     {#if $albumViewSettings.sortBy === option.id}
       {#if $albumViewSettings.sortOrder === SortOrder.Desc}
         &#8595;

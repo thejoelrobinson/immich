@@ -15,9 +15,7 @@
       class="w-1/2 aspect-square bg-light dark:bg-dark rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-walmart-blue dark:border dark:border-transparent"
       onclick={() => themeManager.setTheme(Theme.LIGHT)}
     >
-      <div
-        class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-walmart-blue"
-      >
+      <div class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-walmart-blue">
         <Icon icon={sunPath} viewBox={sunViewBox} size="96" />
         <p class="uppercase font-semibold text-4xl">{$t('light')}</p>
       </div>
@@ -27,9 +25,7 @@
       class="w-1/2 aspect-square bg-dark dark:bg-light rounded-3xl transition-all shadow-sm hover:shadow-xl dark:border-[3px] dark:border-sky-blue border border-transparent"
       onclick={() => themeManager.setTheme(Theme.DARK)}
     >
-      <div
-        class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-sky-blue"
-      >
+      <div class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-sky-blue">
         <Icon icon={moonPath} viewBox={moonViewBox} size="96" />
         <p class="uppercase font-semibold text-4xl">{$t('dark')}</p>
       </div>

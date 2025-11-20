@@ -17,7 +17,7 @@
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { IconButton } from '@immich/ui';
+  import { IconButton } from '@immich/ui';
   import { mdiDownload, mdiFileImagePlusOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';

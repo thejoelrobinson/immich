@@ -16,7 +16,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { addSharedLinkAssets, getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { IconButton, toastManager } from '@immich/ui';
+  import { IconButton, toastManager } from '@immich/ui';
   import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';

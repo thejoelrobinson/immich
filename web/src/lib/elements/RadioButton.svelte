@@ -24,12 +24,12 @@
 
 <style>
   /* Custom radio button styling for better visual appearance */
-  input[type="radio"] {
+  input[type='radio'] {
     -webkit-appearance: none;
     appearance: none;
   }
 
-  input[type="radio"]:checked::after {
+  input[type='radio']:checked::after {
     content: '';
     display: block;
     width: 6px;
@@ -42,18 +42,18 @@
     transform: translate(-50%, -50%);
   }
 
-  input[type="radio"]:disabled {
+  input[type='radio']:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  input[type="radio"]:disabled + label {
+  input[type='radio']:disabled + label {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
   /* Dark mode improvements */
-  :global(.dark) input[type="radio"]:checked::after {
+  :global(.dark) input[type='radio']:checked::after {
     background: rgb(4 30 66);
   }
 </style>

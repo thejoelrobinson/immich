@@ -10,7 +10,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { getMySharedLink, SharedLinkType, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { Button, PasswordInput } from '@immich/ui';
+  import { Button, PasswordInput } from '@immich/ui';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
 
