@@ -115,7 +115,7 @@
 
 <div class="overflow-y-hidden relative h-full border-l border-subtle bg-subtle" bind:offsetHeight={innerHeight}>
   <div class="w-full h-full">
-    <div class="flex w-full h-fit dark:text-immich-dark-fg p-2 bg-subtle" bind:clientHeight={activityHeight}>
+    <div class="flex w-full h-fit dark:text-gray-200 p-2 bg-subtle" bind:clientHeight={activityHeight}>
       <div class="flex place-items-center gap-2">
         <IconButton
           shape="round"
@@ -126,7 +126,7 @@
           aria-label={$t('close')}
         />
 
-        <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
+        <p class="text-lg text-bentonville-blue dark:text-gray-200">{$t('activity')}</p>
       </div>
     </div>
     {#if innerHeight}
@@ -243,7 +243,7 @@
 
   <div class="absolute w-full bottom-0">
     <div class="flex items-center justify-center p-2" bind:clientHeight={chatHeight}>
-      <div class="flex p-2 gap-4 h-fit bg-gray-200 text-immich-dark-gray rounded-3xl w-full">
+      <div class="flex p-2 gap-4 h-fit bg-gray-200 text-bentonville-blue rounded-3xl w-full">
         <div>
           <UserAvatar {user} size="md" noTitle />
         </div>
@@ -277,7 +277,7 @@
                 size="small"
                 variant="ghost"
                 icon={mdiSend}
-                class="dark:text-immich-dark-gray"
+                class="dark:text-bentonville-blue"
                 onclick={() => handleSendComment()}
               />
             </div>

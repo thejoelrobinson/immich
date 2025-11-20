@@ -20,14 +20,14 @@
 </div>
 
 <!-- eslint-disable svelte/no-useless-mustaches -->
-<div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
-  <div class="mb-2 text-gray-600 dark:text-immich-dark-fg">
+<div class="mt-2 rounded-lg bg-gray-200 p-4 text-xs dark:bg-gray-700 dark:text-gray-200">
+  <div class="mb-2 text-gray-600 dark:text-gray-200">
     <p>{$t('admin.storage_template_date_time_description')}</p>
     <p>{$t('admin.storage_template_date_time_sample', { values: { date: '2022-02-03T20:03:05.250' } })}</p>
   </div>
   <div class="flex gap-10">
     <div>
-      <p class="uppercase font-medium text-primary">{$t('year')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('year')}</p>
       <ul>
         {#each options.yearOptions as yearFormat, index (index)}
           <li>{'{{'}{yearFormat}{'}}'} - {getLuxonExample(yearFormat)}</li>
@@ -36,7 +36,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('month')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('month')}</p>
       <ul>
         {#each options.monthOptions as monthFormat, index (index)}
           <li>{'{{'}{monthFormat}{'}}'} - {getLuxonExample(monthFormat)}</li>
@@ -45,7 +45,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('week')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('week')}</p>
       <ul>
         {#each options.weekOptions as weekFormat, index (index)}
           <li>{'{{'}{weekFormat}{'}}'} - {getLuxonExample(weekFormat)}</li>
@@ -54,7 +54,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('day')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('day')}</p>
       <ul>
         {#each options.dayOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -63,7 +63,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('hour')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('hour')}</p>
       <ul>
         {#each options.hourOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -72,7 +72,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('minute')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('minute')}</p>
       <ul>
         {#each options.minuteOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>
@@ -81,7 +81,7 @@
     </div>
 
     <div>
-      <p class="uppercase font-medium text-primary">{$t('second')}</p>
+      <p class="uppercase font-medium text-walmart-blue">{$t('second')}</p>
       <ul>
         {#each options.secondOptions as dayFormat, index (index)}
           <li>{'{{'}{dayFormat}{'}}'} - {getLuxonExample(dayFormat)}</li>

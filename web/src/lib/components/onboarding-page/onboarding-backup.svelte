@@ -37,7 +37,7 @@
       <div class="space-y-6">
         {#each messageKeys as keyString, index (index)}
           <div class="flex items-start gap-6">
-            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center">
+            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-walmart-blue/90 flex items-center justify-center">
               <span class="text-light text-xl font-semibold">{3 - index}</span>
             </div>
             <div class="leading-relaxed pt-2">

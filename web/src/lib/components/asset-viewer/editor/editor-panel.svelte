@@ -41,7 +41,7 @@
 
 <svelte:document use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onClose }} />
 
-<section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+<section class="relative p-2 dark:bg-immich-dark-bg dark:text-gray-200">
   <div class="flex place-items-center gap-2">
     <IconButton
       shape="round"
@@ -51,7 +51,7 @@
       aria-label={$t('close')}
       onclick={onClose}
     />
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
+    <p class="text-lg text-bentonville-blue dark:text-gray-200 capitalize">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
     <ul class="flex w-full justify-around">

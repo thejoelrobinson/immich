@@ -63,7 +63,7 @@ import { IconButton } from '@immich/ui';
   <Timeline enableRouting={true} {album} bind:timelineManager {options} {assetInteraction}>
     <section class="pt-8 md:pt-24 px-2 md:px-0">
       <!-- ALBUM TITLE -->
-      <h1 class="text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all">
+      <h1 class="text-2xl md:text-4xl lg:text-6xl text-walmart-blue outline-none transition-all">
         {album.albumName}
       </h1>
 

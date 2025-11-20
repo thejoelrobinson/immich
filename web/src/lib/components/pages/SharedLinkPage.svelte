@@ -72,8 +72,8 @@ import { Button, PasswordInput } from '@immich/ui';
     class="relative h-dvh overflow-hidden px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height) sm:px-12 md:px-24 lg:px-40"
   >
     <div class="flex flex-col items-center justify-center mt-20">
-      <div class="text-2xl font-bold text-primary">{$t('password_required')}</div>
-      <div class="mt-4 text-lg text-primary">
+      <div class="text-2xl font-bold text-walmart-blue">{$t('password_required')}</div>
+      <div class="mt-4 text-lg text-walmart-blue">
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">

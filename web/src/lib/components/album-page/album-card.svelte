@@ -60,7 +60,7 @@
 
   <div class="mt-4">
     <p
-      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-primary"
+      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-walmart-blue"
       data-testid="album-name"
       title={album.albumName}
     >
@@ -68,12 +68,12 @@
     </p>
 
     {#if showDateRange && album.startDate && album.endDate}
-      <p class="flex text-sm dark:text-immich-dark-fg capitalize">
+      <p class="flex text-sm dark:text-gray-200 capitalize">
         {getShortDateRange(album.startDate, album.endDate)}
       </p>
     {/if}
 
-    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
+    <span class="flex gap-2 text-sm dark:text-gray-200" data-testid="album-details">
       {#if showItemCount}
         <p>
           {$t('items_count', { values: { count: album.assetCount } })}

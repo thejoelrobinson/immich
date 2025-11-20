@@ -11,7 +11,7 @@
 <div class={['overflow-clip', { invisible }]} style:height={height + 'px'}>
   {#if title}
     <div
-      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-bentonville-blue dark:text-gray-200 md:text-sm"
     >
       {title}
     </div>

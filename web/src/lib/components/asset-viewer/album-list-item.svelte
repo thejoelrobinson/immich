@@ -119,7 +119,7 @@
   role="group"
   class={[
     'relative flex w-full text-start justify-between transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl my-2 hover:cursor-pointer',
-    { 'bg-primary/10 hover:bg-primary/10': multiSelected },
+    { 'bg-walmart-blue/10 hover:bg-walmart-blue/10': multiSelected },
   ]}
   onmouseenter={onMouseEnter}
   onmouseleave={onMouseLeave}
@@ -165,10 +165,10 @@
     >
       {#if multiSelected}
         <div class="rounded-full">
-          <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-walmart-blue" />
         </div>
       {:else}
-        <Icon icon={mdiCheckCircle} size="24" class="text-gray-300 hover:text-primary/75" />
+        <Icon icon={mdiCheckCircle} size="24" class="text-gray-300 hover:text-walmart-blue/75" />
       {/if}
     </button>
   {/if}

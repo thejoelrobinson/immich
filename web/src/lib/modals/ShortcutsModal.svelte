@@ -61,7 +61,7 @@
                 <div class="flex justify-self-end">
                   {#each shortcut.key as key (key)}
                     <p
-                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
+                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-walmart-blue/25 p-2"
                     >
                       {key}
                     </p>
@@ -82,7 +82,7 @@
                 <div class="flex justify-self-end">
                   {#each shortcut.key as key (key)}
                     <p
-                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2"
+                      class="me-1 flex items-center justify-center justify-self-end rounded-lg bg-walmart-blue/25 p-2"
                     >
                       {key}
                     </p>

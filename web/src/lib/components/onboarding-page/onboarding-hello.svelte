@@ -12,7 +12,7 @@
 
 <div class="gap-4">
   ​<WalmartLogo variant="icon" size="giant" class="mb-2" />
-  <p class="font-medium mb-6 text-6xl text-primary">
+  <p class="font-medium mb-6 text-6xl text-walmart-blue">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>
   <p class="text-3xl pb-6 font-light">

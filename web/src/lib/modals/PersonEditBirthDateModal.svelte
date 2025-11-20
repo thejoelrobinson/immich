@@ -33,8 +33,8 @@
 
 <Modal title={$t('set_date_of_birth')} icon={mdiCake} {onClose} size="small">
   <ModalBody>
-    <div class="text-primary">
-      <p class="text-sm dark:text-immich-dark-fg">
+    <div class="text-walmart-blue">
+      <p class="text-sm dark:text-gray-200">
         {$t('birthdate_set_description')}
       </p>
     </div>

@@ -131,10 +131,10 @@
           <div class="flex gap-4">
             <UserAvatar user={partner.user} size="md" />
             <div class="text-start">
-              <p class="text-immich-fg dark:text-immich-dark-fg">
+              <p class="text-bentonville-blue dark:text-gray-200">
                 {partner.user.name}
               </p>
-              <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
+              <p class="text-sm text-bentonville-blue/75 dark:text-gray-200/75">
                 {partner.user.email}
               </p>
             </div>
@@ -153,7 +153,7 @@
           {/if}
         </div>
 
-        <div class="dark:text-gray-200 text-immich-dark-gray">
+        <div class="dark:text-gray-200 text-bentonville-blue">
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />

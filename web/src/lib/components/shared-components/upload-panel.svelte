@@ -131,7 +131,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-primary p-5 text-xs text-gray-200"
+          class="absolute -start-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-walmart-blue p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
         </button>
@@ -149,7 +149,7 @@
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
           onclick={() => (showDetail = true)}
-          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-primary shadow-lg"
+          class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-subtle p-5 text-sm text-walmart-blue shadow-lg"
         >
           <div class="animate-pulse">
             <Icon icon={mdiCloudUploadOutline} size="30" />

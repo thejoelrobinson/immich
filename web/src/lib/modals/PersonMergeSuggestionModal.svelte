@@ -87,7 +87,7 @@
         <button
           type="button"
           disabled={potentialMergePeople.length === 0}
-          class="flex h-28 w-28 items-center rounded-full border-2 border-immich-primary px-1 dark:border-immich-dark-primary md:h-32 md:w-32 md:px-2"
+          class="flex h-28 w-28 items-center rounded-full border-2 border-walmart-blue px-1 dark:border-sky-blue md:h-32 md:w-32 md:px-2"
           onclick={() => {
             if (potentialMergePeople.length > 0) {
               choosePersonToMerge = !choosePersonToMerge;

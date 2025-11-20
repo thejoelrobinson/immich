@@ -46,7 +46,7 @@
           >
             {#if selectedUsers.includes(user)}
               <span
-                class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-immich-primary text-3xl text-white dark:border-immich-dark-gray dark:bg-immich-dark-primary dark:text-immich-dark-bg"
+                class="flex h-12 w-12 place-content-center place-items-center rounded-full border bg-walmart-blue text-3xl text-white dark:border-bentonville-blue dark:bg-sky-blue dark:text-immich-dark-bg"
                 >✓</span
               >
             {:else}
@@ -54,7 +54,7 @@
             {/if}
 
             <div class="text-start">
-              <p class="text-immich-fg dark:text-immich-dark-fg">
+              <p class="text-bentonville-blue dark:text-gray-200">
                 {user.name}
               </p>
               <p class="text-xs">

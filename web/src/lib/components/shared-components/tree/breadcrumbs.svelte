@@ -35,7 +35,7 @@
   {/if}
 
   <div
-    class="bg-gray-50 dark:bg-immich-dark-gray/50 w-full p-2 rounded-2xl border border-gray-100 dark:border-gray-900 overflow-y-auto immich-scrollbar"
+    class="bg-gray-50 dark:bg-bentonville-blue/50 w-full p-2 rounded-2xl border border-gray-100 dark:border-gray-900 overflow-y-auto immich-scrollbar"
   >
     <ol class="flex gap-2 items-center">
       <li>
@@ -51,7 +51,7 @@
         />
       </li>
       {#each parents as parent (parent)}
-        <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
+        <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-walmart-blue">
           <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
           <a class="underline hover:font-semibold whitespace-pre-wrap" href={getLink(parent.path)}>
             {parent.value}
@@ -59,7 +59,7 @@
         </li>
       {/each}
 
-      <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-primary">
+      <li class="flex gap-2 items-center font-mono text-sm text-nowrap text-walmart-blue">
         <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
         <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
       </li>

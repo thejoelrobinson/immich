@@ -120,12 +120,12 @@
       <!-- PRODUCT KEY INFO CARD -->
       {#if isServerProduct}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
+          class="bg-gray-50 border border-sky-blue/20 dark:bg-sky-blue/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon icon={mdiKey} size="56" class="text-primary" />
+          <Icon icon={mdiKey} size="56" class="text-walmart-blue" />
 
           <div>
-            <p class="text-primary font-semibold text-lg">
+            <p class="text-walmart-blue font-semibold text-lg">
               {$t('purchase_server_title')}
             </p>
 
@@ -152,12 +152,12 @@
         {/if}
       {:else}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
+          class="bg-gray-50 border border-sky-blue/20 dark:bg-sky-blue/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
         >
-          <Icon icon={mdiKey} size="56" class="text-primary" />
+          <Icon icon={mdiKey} size="56" class="text-walmart-blue" />
 
           <div>
-            <p class="text-primary font-semibold text-lg">
+            <p class="text-walmart-blue font-semibold text-lg">
               {$t('purchase_individual_title')}
             </p>
             {#if $user.license?.activatedAt}

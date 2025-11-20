@@ -14,9 +14,9 @@
 </script>
 
 <div class="grid grid-cols-[25px_1fr] w-full px-1 py-0.5" class:border-b={borderBottom} {title}>
-  <Icon {icon} size="18" class="text-dark/25 {highlight ? 'text-primary/75' : ''}" />
+  <Icon {icon} size="18" class="text-dark/25 {highlight ? 'text-walmart-blue/75' : ''}" />
   <div class="justify-self-end text-end rounded px-1 transition-colors">
-    <Text size="tiny" class={highlight ? 'font-semibold text-primary' : ''}>
+    <Text size="tiny" class={highlight ? 'font-semibold text-walmart-blue' : ''}>
       {@render children?.()}
     </Text>
   </div>

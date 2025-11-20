@@ -22,7 +22,7 @@ import { Icon, IconButton } from '@immich/ui';
 
 <div class="h-dvh w-dvw">
   <section>
-    <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
+    <div class="flex place-items-center border-b px-6 py-4 dark:border-b-bentonville-blue">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
         ​<WalmartLogo variant="inline" />
       </a>
@@ -32,11 +32,11 @@ import { Icon, IconButton } from '@immich/ui';
   <div class="fixed top-0 flex h-full w-full place-content-center place-items-center overflow-hidden bg-black/50">
     <div>
       <div
-        class="w-125 max-w-[95vw] rounded-3xl border shadow-sm dark:border-immich-dark-gray dark:text-immich-dark-fg bg-subtle/80"
+        class="w-125 max-w-[95vw] rounded-3xl border shadow-sm dark:border-bentonville-blue dark:text-gray-200 bg-subtle/80"
       >
         <div>
           <div class="flex items-center justify-between gap-4 px-4 py-4">
-            <h1 class="font-medium text-primary">
+            <h1 class="font-medium text-walmart-blue">
               🚨 {$t('error_title')}
             </h1>
             <div class="flex justify-end">

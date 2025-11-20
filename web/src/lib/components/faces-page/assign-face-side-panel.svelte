@@ -73,7 +73,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-gray-200 bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
@@ -86,7 +86,7 @@
           aria-label={$t('back')}
           onclick={onClose}
         />
-        <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('select_face')}</p>
+        <p class="flex text-lg text-bentonville-blue dark:text-gray-200">{$t('select_face')}</p>
       </div>
       <div class="flex justify-end gap-2">
         <IconButton

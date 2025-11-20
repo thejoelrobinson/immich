@@ -127,7 +127,7 @@
       color="secondary"
       variant="ghost"
     />
-    <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
+    <p class="text-lg text-bentonville-blue dark:text-gray-200">{$t('info')}</p>
   </div>
 
   {#if asset.isOffline}
@@ -273,7 +273,7 @@
         class="flex w-full text-start justify-between place-items-start gap-4 py-4"
         onclick={handleChangeDate}
         title={isOwner ? $t('edit_date') : ''}
-        class:hover:text-primary={isOwner}
+        class:hover:text-walmart-blue={isOwner}
       >
         <div class="flex gap-4">
           <div>
@@ -346,7 +346,7 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
+          <p class="text-xs opacity-50 break-all pb-2 hover:text-walmart-blue" transition:slide={{ duration: 250 }}>
             <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
             <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
@@ -387,7 +387,7 @@
                   })}`,
                 )}
                 title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
-                class="hover:text-primary"
+                class="hover:text-walmart-blue"
               >
                 {asset.exifInfo.make || ''}
                 {asset.exifInfo.model || ''}
@@ -403,7 +403,7 @@
                     `${AppRoute.SEARCH}?${getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}`,
                   )}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
+                  class="hover:text-walmart-blue line-clamp-1"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -474,7 +474,7 @@
             <a
               href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
               target="_blank"
-              class="font-medium text-primary underline focus:outline-none"
+              class="font-medium text-walmart-blue underline focus:outline-none"
             >
               {$t('open_in_openstreetmap')}
             </a>
@@ -486,7 +486,7 @@
 {/if}
 
 {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
-  <section class="px-6 dark:text-immich-dark-fg mt-4">
+  <section class="px-6 dark:text-gray-200 mt-4">
     <p class="uppercase text-sm">{$t('shared_by')}</p>
     <div class="flex gap-4 pt-4">
       <div>
@@ -503,7 +503,7 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="px-6 py-6 dark:text-immich-dark-fg">
+  <section class="px-6 py-6 dark:text-gray-200">
     <p class="uppercase pb-4 text-sm">{$t('appears_in')}</p>
     {#each albums as album (album.id)}
       <a href={resolve(`${AppRoute.ALBUMS}/${album.id}`)}>
@@ -519,7 +519,7 @@
           </div>
 
           <div class="mb-auto mt-auto">
-            <p class="dark:text-immich-dark-primary">{album.albumName}</p>
+            <p class="dark:text-sky-blue">{album.albumName}</p>
             <div class="flex flex-col gap-0 text-sm">
               <div>
                 <AlbumListItemDetails {album} />
@@ -533,7 +533,7 @@
 {/if}
 
 {#if $preferences?.tags?.enabled}
-  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-gray-200">
     <DetailPanelTags {asset} {isOwner} />
   </section>
 {/if}

@@ -57,7 +57,7 @@
 
 {#snippet row(viewName: string, stats: AssetStatsResponseDto)}
   <tr
-    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+    class="flex h-14 w-full place-items-center text-center dark:text-gray-200 even:bg-subtle/20 odd:bg-subtle/80"
   >
     <td class="w-1/4 px-4 text-sm">{viewName}</td>
     <td class="w-1/4 px-4 text-sm">{stats.images.toLocaleString($locale)}</td>
@@ -71,7 +71,7 @@
   <div class="overflow-x-auto">
     <table class="w-full text-start mt-4">
       <thead
-        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-walmart-blue dark:border-bentonville-blue dark:bg-bentonville-blue"
       >
         <tr class="flex w-full place-items-center text-sm font-medium text-center">
           <th class="w-1/4">{$t('view_name')}</th>
@@ -80,7 +80,7 @@
           <th class="w-1/4">{$t('total')}</th>
         </tr>
       </thead>
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue">
         {@render row($t('timeline'), timelineStats)}
         {@render row($t('favorites'), favoriteStats)}
         {@render row($t('archive'), archiveStats)}
@@ -94,14 +94,14 @@
   </div>
   <div class="overflow-x-auto">
     <table class="w-full text-start mt-4">
-      <thead class="mb-4 flex h-12 w-full rounded-md border text-primary dark:border-immich-dark-gray bg-subtle">
+      <thead class="mb-4 flex h-12 w-full rounded-md border text-walmart-blue dark:border-bentonville-blue bg-subtle">
         <tr class="flex w-full place-items-center text-sm font-medium text-center">
           <th class="w-1/2">{$t('owned')}</th>
           <th class="w-1/2">{$t('shared')}</th>
         </tr>
       </thead>
-      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-        <tr class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg bg-subtle/20">
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue">
+        <tr class="flex h-14 w-full place-items-center text-center dark:text-gray-200 bg-subtle/20">
           <td class="w-1/2 px-4 text-sm">{albumStats.owned.toLocaleString($locale)}</td>
           <td class="w-1/2 px-4 text-sm">{albumStats.shared.toLocaleString($locale)}</td>
         </tr>

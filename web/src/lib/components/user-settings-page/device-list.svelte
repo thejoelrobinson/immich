@@ -52,7 +52,7 @@
 <section class="my-4">
   {#if currentSession}
     <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+      <h3 class="uppercase mb-2 text-xs font-medium text-walmart-blue">
         {$t('current_device')}
       </h3>
       <DeviceCard session={currentSession} />
@@ -60,7 +60,7 @@
   {/if}
   {#if otherSessions.length > 0}
     <div class="mb-6">
-      <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+      <h3 class="uppercase mb-2 text-xs font-medium text-walmart-blue">
         {$t('other_devices')}
       </h3>
       {#each otherSessions as session, index (session.id)}
@@ -70,7 +70,7 @@
         {/if}
       {/each}
     </div>
-    <h3 class="uppercase mb-2 text-xs font-medium text-primary">
+    <h3 class="uppercase mb-2 text-xs font-medium text-walmart-blue">
       {$t('log_out_all_devices')}
     </h3>
     <div class="flex justify-end">

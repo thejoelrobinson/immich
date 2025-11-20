@@ -59,7 +59,7 @@
         </div>
 
         <div class="text-sm pb-2">
-          <p class="flex place-items-center gap-2 text-primary break-all uppercase">
+          <p class="flex place-items-center gap-2 text-walmart-blue break-all uppercase">
             {#if sharedLink.type === SharedLinkType.Album}
               {sharedLink.album?.albumName}
             {:else if sharedLink.type === SharedLinkType.Individual}

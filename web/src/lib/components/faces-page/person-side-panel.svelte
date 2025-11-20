@@ -186,7 +186,7 @@
 
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
-  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-immich-dark-fg bg-light"
+  class="absolute top-0 h-full w-90 overflow-x-hidden p-2 dark:text-gray-200 bg-light"
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
@@ -198,12 +198,12 @@
         aria-label={$t('back')}
         onclick={onClose}
       />
-      <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
+      <p class="flex text-lg text-bentonville-blue dark:text-gray-200">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
       <button
         type="button"
-        class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
+        class="justify-self-end rounded-lg p-2 hover:bg-sky-blue hover:dark:bg-sky-blue/50"
         onclick={() => handleEditFaces()}
       >
         {$t('done')}

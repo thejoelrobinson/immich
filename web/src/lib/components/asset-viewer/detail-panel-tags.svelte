@@ -45,7 +45,7 @@
       {#each tags as tag (tag.id)}
         <div class="flex group transition-all">
           <a
-            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-bentonville-blue bg-primary rounded-s-full hover:bg-walmart-blue/80 dark:hover:bg-sky-blue/80 transition-all"
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-bentonville-blue bg-walmart-blue rounded-s-full hover:bg-walmart-blue/80 dark:hover:bg-sky-blue/80 transition-all"
             href={resolve(`${AppRoute.TAGS}/?path=${encodeURI(tag.value)}`)}
           >
             <p class="text-sm">

@@ -32,10 +32,10 @@
             </div>
             <div class="flex place-items-center gap-2">
               <div class="h-2.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-600">
-                <div class="h-2.5 rounded-full bg-primary" style={`width: ${download.percentage}%`}></div>
+                <div class="h-2.5 rounded-full bg-walmart-blue" style={`width: ${download.percentage}%`}></div>
               </div>
               <p class="min-w-16 whitespace-nowrap text-right">
-                <span class="text-primary">
+                <span class="text-walmart-blue">
                   {(download.percentage / 100).toLocaleString($locale, { style: 'percent' })}
                 </span>
               </p>

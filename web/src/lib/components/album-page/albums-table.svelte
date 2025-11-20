@@ -26,7 +26,7 @@
 
 <table class="mt-2 w-full text-start">
   <thead
-    class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+    class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-walmart-blue dark:border-bentonville-blue dark:bg-bentonville-blue"
   >
     <tr class="flex w-full place-items-center p-2 md:p-5">
       {#each sortOptionsMetadata as option, index (index)}
@@ -35,7 +35,7 @@
     </tr>
   </thead>
   {#if albumGroupOption === AlbumGroupBy.None}
-    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg">
+    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue dark:text-gray-200">
       {#each groupedAlbums[0].albums as album (album.id)}
         <AlbumTableRow {album} {onShowContextMenu} />
       {/each}
@@ -45,7 +45,7 @@
       {@const isCollapsed = isAlbumGroupCollapsed($albumViewSettings, albumGroup.id)}
       {@const iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90'}
       <tbody
-        class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4"
+        class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue dark:text-gray-200 mt-4"
       >
         <tr
           class="flex w-full place-items-center p-2 md:ps-5 md:pe-5 md:pt-3 md:pb-3"
@@ -67,7 +67,7 @@
       </tbody>
       {#if !isCollapsed}
         <tbody
-          class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray dark:text-immich-dark-fg mt-4"
+          class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue dark:text-gray-200 mt-4"
           transition:slide={{ duration: 300 }}
         >
           {#each albumGroup.albums as album (album.id)}

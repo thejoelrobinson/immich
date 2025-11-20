@@ -74,7 +74,7 @@
         {#each peopleList as person (person.id)}
           <button
             type="button"
-            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-immich-dark-primary/20 p-2 transition-all {selectedPeople.has(
+            class="flex flex-col items-center rounded-3xl border-2 hover:bg-subtle dark:hover:bg-sky-blue/20 p-2 transition-all {selectedPeople.has(
               person.id,
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'

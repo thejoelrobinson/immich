@@ -39,7 +39,7 @@
       checked={selectAllSubItems}
       onCheckedChange={handleSelectAllSubItems}
     />
-    <Label label={title} for={title} class="font-mono text-primary text-lg" />
+    <Label label={title} for={title} class="font-mono text-walmart-blue text-lg" />
   </div>
   <div class="mx-6 mt-3 grid grid-cols-3 gap-2">
     {#each subItems as item (item)}

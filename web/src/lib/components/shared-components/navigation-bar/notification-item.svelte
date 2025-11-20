@@ -127,7 +127,7 @@
     </Stack>
 
     {#if !notification.readAt}
-      <div class="w-2 h-2 rounded-full bg-primary text-right justify-self-center"></div>
+      <div class="w-2 h-2 rounded-full bg-walmart-blue text-right justify-self-center"></div>
     {/if}
   </div>
 </button>

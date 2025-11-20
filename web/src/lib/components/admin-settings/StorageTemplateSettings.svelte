@@ -103,9 +103,9 @@
   });
 </script>
 
-<section class="dark:text-immich-dark-fg mt-2">
+<section class="dark:text-gray-200 mt-2">
   <div in:fade={{ duration }} class="mx-4 flex flex-col gap-4 py-4">
-    <p class="text-sm dark:text-immich-dark-fg">
+    <p class="text-sm dark:text-gray-200">
       <FormatMessage key="admin.storage_template_more_details">
         {#snippet children({ tag, message })}
           {#if tag === 'template-link'}
@@ -155,7 +155,7 @@
       {#if configToEdit.storageTemplate.enabled}
         <hr />
 
-        <h3 class="text-base font-medium text-primary">{$t('variables')}</h3>
+        <h3 class="text-base font-medium text-walmart-blue">{$t('variables')}</h3>
 
         <section class="support-date">
           {#await getSupportDateTimeFormat()}
@@ -172,7 +172,7 @@
         </section>
 
         <div class="flex flex-col mt-4">
-          <h3 class="text-base font-medium text-primary">{$t('template')}</h3>
+          <h3 class="text-base font-medium text-walmart-blue">{$t('template')}</h3>
 
           <div class="my-2 text-sm">
             <h4 class="uppercase">{$t('preview')}</h4>
@@ -184,7 +184,7 @@
               values={{ length: parsedTemplate().length + $user.id.length + 'UPLOAD_LOCATION'.length, limit: 260 }}
             >
               {#snippet children({ message })}
-                <span class="font-semibold text-primary">{message}</span>
+                <span class="font-semibold text-walmart-blue">{message}</span>
               {/snippet}
             </FormatMessage>
           </p>
@@ -192,13 +192,13 @@
           <p class="text-sm">
             <FormatMessage key="admin.storage_template_user_label" values={{ label: $user.storageLabel || $user.id }}>
               {#snippet children({ message })}
-                <code class="text-primary">{message}</code>
+                <code class="text-walmart-blue">{message}</code>
               {/snippet}
             </FormatMessage>
           </p>
 
-          <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
-            <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
+          <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-gray-200">
+            <span class="text-bentonville-blue/25 dark:text-gray-200/50"
               >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
@@ -206,7 +206,7 @@
           <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
             <div class="flex flex-col my-2">
               {#if templateOptions}
-                <label class="font-medium text-primary text-sm" for="preset-select">
+                <label class="font-medium text-walmart-blue text-sm" for="preset-select">
                   {$t('preset')}
                 </label>
                 <select
@@ -246,7 +246,7 @@
 
             {#if !minified}
               <div id="migration-info" class="mt-2 text-sm">
-                <h3 class="text-base font-medium text-primary">{$t('notes')}</h3>
+                <h3 class="text-base font-medium text-walmart-blue">{$t('notes')}</h3>
                 <section class="flex flex-col gap-2">
                   <p>
                     <FormatMessage
@@ -254,7 +254,7 @@
                       values={{ job: $t('admin.storage_template_migration_job') }}
                     >
                       {#snippet children({ message })}
-                        <a href={resolve(AppRoute.ADMIN_JOBS)} class="text-primary">
+                        <a href={resolve(AppRoute.ADMIN_JOBS)} class="text-walmart-blue">
                           {message}
                         </a>
                       {/snippet}

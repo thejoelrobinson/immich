@@ -31,8 +31,8 @@
 
 <Modal size="small" title={$t('create_tag')} icon={mdiTag} {onClose}>
   <ModalBody>
-    <div class="text-primary">
-      <p class="text-sm dark:text-immich-dark-fg">
+    <div class="text-walmart-blue">
+      <p class="text-sm dark:text-gray-200">
         {$t('create_tag_description')}
       </p>
     </div>

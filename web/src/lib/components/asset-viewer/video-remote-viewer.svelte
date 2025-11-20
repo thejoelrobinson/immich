@@ -70,7 +70,7 @@
 </script>
 
 <span class="flex items-center space-x-2 text-gray-200 text-2xl font-bold">
-  <Icon icon={mdiCastConnected} class="text-primary" size="36" />
+  <Icon icon={mdiCastConnected} class="text-walmart-blue" size="36" />
   <span>{$t('connected_to')} {castManager.receiverName}</span>
 </span>
 
@@ -98,6 +98,6 @@
     max={castManager.duration}
     value={castManager.currentTime ?? 0}
     onchange={handleSeek}
-    class="w-full h-4 bg-primary"
+    class="w-full h-4 bg-walmart-blue"
   />
 </div>

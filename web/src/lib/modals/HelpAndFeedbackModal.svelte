@@ -20,7 +20,7 @@
       <div>
         <a href="https://docs.{info.version}.archive.immich.app/overview/introduction" target="_blank" rel="noreferrer">
           <Icon icon={mdiInformationOutline} size="1.5em" class="inline-block" />
-          <p class="font-medium text-primary text-sm underline inline-block" id="documentation-label">
+          <p class="font-medium text-walmart-blue text-sm underline inline-block" id="documentation-label">
             {$t('documentation')}
           </p>
         </a>
@@ -29,7 +29,7 @@
       <div>
         <a href="https://github.com/immich-app/immich/" target="_blank" rel="noreferrer">
           <Icon icon={mdiGithub} size="1.5em" class="inline-block" />
-          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+          <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
             {$t('source')}
           </p>
         </a>
@@ -38,7 +38,7 @@
       <div>
         <a href="https://discord.immich.app" target="_blank" rel="noreferrer">
           <Icon icon={siDiscord} class="inline-block" size="1.5em" />
-          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+          <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
             {$t('discord')}
           </p>
         </a>
@@ -47,7 +47,7 @@
       <div>
         <a href="https://github.com/immich-app/immich/issues/new/choose" target="_blank" rel="noreferrer">
           <Icon icon={mdiBugOutline} size="1.5em" class="inline-block" />
-          <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+          <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
             {$t('bugs_and_feature_requests')}
           </p>
         </a>
@@ -63,7 +63,7 @@
           <div>
             <a href={info.thirdPartyDocumentationUrl} target="_blank" rel="noreferrer">
               <Icon icon={mdiInformationOutline} size="1.5em" class="inline-block" />
-              <p class="font-medium text-primary text-sm underline inline-block" id="documentation-label">
+              <p class="font-medium text-walmart-blue text-sm underline inline-block" id="documentation-label">
                 {$t('documentation')}
               </p>
             </a>
@@ -74,7 +74,7 @@
           <div>
             <a href={info.thirdPartySourceUrl} target="_blank" rel="noreferrer">
               <Icon icon={mdiGit} size="1.5em" class="inline-block" />
-              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+              <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
                 {$t('source')}
               </p>
             </a>
@@ -85,7 +85,7 @@
           <div>
             <a href={info.thirdPartySupportUrl} target="_blank" rel="noreferrer">
               <Icon icon={mdiFaceAgent} class="inline-block" size="1.5em" />
-              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+              <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
                 {$t('support')}
               </p>
             </a>
@@ -96,7 +96,7 @@
           <div>
             <a href={info.thirdPartyBugFeatureUrl} target="_blank" rel="noreferrer">
               <Icon icon={mdiBugOutline} size="1.5em" class="inline-block" />
-              <p class="font-medium text-primary text-sm underline inline-block" id="github-label">
+              <p class="font-medium text-walmart-blue text-sm underline inline-block" id="github-label">
                 {$t('bugs_and_feature_requests')}
               </p>
             </a>

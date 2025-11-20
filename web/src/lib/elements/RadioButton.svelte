@@ -19,7 +19,7 @@
     class="cursor-pointer appearance-none w-5 h-5 border-2 border-gray-300 rounded-full bg-white accent-walmart-blue checked:bg-walmart-blue checked:border-walmart-blue focus-visible:ring-2 focus-visible:ring-sky-blue focus-visible:ring-offset-1 focus-visible:outline-none dark:bg-bentonville-blue/20 dark:border-everyday-blue dark:checked:bg-sky-blue dark:checked:border-sky-blue transition-all duration-200"
     bind:group
   />
-  <label for={id} class="font-medium text-immich-fg dark:text-white cursor-pointer">{label}</label>
+  <label for={id} class="font-medium text-bentonville-blue dark:text-white cursor-pointer">{label}</label>
 </div>
 
 <style>

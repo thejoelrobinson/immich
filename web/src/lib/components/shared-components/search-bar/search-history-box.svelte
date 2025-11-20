@@ -102,7 +102,7 @@
           <button
             id={getId(0)}
             type="button"
-            class="rounded-lg p-2 font-semibold text-primary aria-selected:bg-walmart-blue/25 hover:bg-walmart-blue/25"
+            class="rounded-lg p-2 font-semibold text-walmart-blue aria-selected:bg-walmart-blue/25 hover:bg-walmart-blue/25"
             role="option"
             onclick={() => handleClearAll()}
             tabindex="-1"

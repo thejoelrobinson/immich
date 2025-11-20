@@ -38,12 +38,12 @@
   {#if showSettingDescription}
     <div>
       <div class="flex h-6.5 place-items-center gap-1">
-        <label class="font-medium text-primary text-sm" for={$t('language')}>
+        <label class="font-medium text-walmart-blue text-sm" for={$t('language')}>
           {$t('language')}
         </label>
       </div>
 
-      <p class="text-sm dark:text-immich-dark-fg">{$t('language_setting_description')}</p>
+      <p class="text-sm dark:text-gray-200">{$t('language_setting_description')}</p>
     </div>
   {/if}
 

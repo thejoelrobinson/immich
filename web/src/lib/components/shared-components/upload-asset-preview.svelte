@@ -43,14 +43,14 @@
 <div
   in:fade={{ duration: 250 }}
   out:fade={{ duration: 100 }}
-  class="flex flex-col rounded-xl text-xs p-2 gap-1 border border-gray-300 dark:border-subtle bg-primary/10"
+  class="flex flex-col rounded-xl text-xs p-2 gap-1 border border-gray-300 dark:border-subtle bg-walmart-blue/10"
 >
   <div class="flex items-center gap-2">
     <div class="flex items-center justify-center">
       {#if uploadAsset.state === UploadState.PENDING}
-        <Icon icon={mdiCircleOutline} size="24" class="text-primary" title={$t('pending')} />
+        <Icon icon={mdiCircleOutline} size="24" class="text-walmart-blue" title={$t('pending')} />
       {:else if uploadAsset.state === UploadState.STARTED}
-        <Icon icon={mdiLoading} size="24" spin class="text-primary" title={$t('asset_skipped')} />
+        <Icon icon={mdiLoading} size="24" spin class="text-walmart-blue" title={$t('asset_skipped')} />
       {:else if uploadAsset.state === UploadState.ERROR}
         <Icon icon={mdiAlertCircle} size="24" class="text-danger" title={$t('error')} />
       {:else if uploadAsset.state === UploadState.DUPLICATED}

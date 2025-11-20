@@ -61,7 +61,7 @@
   </div>
 
   <div class="mt-6">
-    <p class="dark:text-immich-gray">{$t('purchase_input_suggestion')}</p>
+    <p class="dark:text-gray-300">{$t('purchase_input_suggestion')}</p>
     <form class="mt-2 flex gap-2" onsubmit={activate}>
       <input
         class="immich-form-input w-full"

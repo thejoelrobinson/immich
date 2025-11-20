@@ -268,7 +268,7 @@
   <div>
     {#if isActive}
       <div class="absolute inset-y-0 start-0 flex items-center ps-3">
-        <div class="dark:text-immich-dark-fg/75">
+        <div class="dark:text-gray-200/75">
           <Icon icon={mdiMagnify} aria-hidden />
         </div>
       </div>

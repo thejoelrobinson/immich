@@ -81,7 +81,7 @@
 
                 <!-- <UserAvatar {user} size="md" /> -->
                 <div class="text-start grow">
-                  <p class="text-immich-fg dark:text-immich-dark-fg">
+                  <p class="text-bentonville-blue dark:text-gray-200">
                     {user.name}
                   </p>
                   <p class="text-xs">
@@ -123,7 +123,7 @@
                 >
                   <UserAvatar {user} size="md" />
                   <div class="text-start grow">
-                    <p class="text-immich-fg dark:text-immich-dark-fg">
+                    <p class="text-bentonville-blue dark:text-gray-200">
                       {user.name}
                     </p>
                     <p class="text-xs">

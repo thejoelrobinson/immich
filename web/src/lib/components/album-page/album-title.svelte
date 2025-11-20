@@ -38,9 +38,9 @@
 <input
   use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
   onblur={handleUpdateName}
-  class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-primary outline-none transition-all {isOwned
+  class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-walmart-blue outline-none transition-all {isOwned
     ? 'hover:border-gray-400'
-    : 'hover:border-transparent'} focus:border-b-2 focus:border-walmart-blue focus:outline-none bg-light dark:focus:border-sky-blue dark:focus:bg-bentonville-blue placeholder:text-primary/90"
+    : 'hover:border-transparent'} focus:border-b-2 focus:border-walmart-blue focus:outline-none bg-light dark:focus:border-sky-blue dark:focus:bg-bentonville-blue placeholder:text-walmart-blue/90"
   type="text"
   bind:value={newAlbumName}
   disabled={!isOwned}

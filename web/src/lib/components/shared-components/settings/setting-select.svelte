@@ -40,7 +40,7 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-immich-fg dark:text-white text-sm" for="{name}-select">{label}</label>
+    <label class="font-medium text-bentonville-blue dark:text-white text-sm" for="{name}-select">{label}</label>
 
     {#if isEdited}
       <div
@@ -65,7 +65,7 @@
       aria-hidden
       class="pointer-events-none end-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
         ? 'text-gray-400 dark:text-gray-600'
-        : 'text-immich-fg dark:text-white'}"
+        : 'text-bentonville-blue dark:text-white'}"
     />
     <select
       class="immich-form-input w-full appearance-none row-start-1 col-start-1 pe-6!"

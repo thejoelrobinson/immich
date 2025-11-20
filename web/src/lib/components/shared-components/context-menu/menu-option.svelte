@@ -21,7 +21,7 @@
     subtitle = '',
     icon = '',
     activeColor = 'bg-slate-300',
-    textColor = 'text-immich-fg dark:text-immich-dark-bg',
+    textColor = 'text-bentonville-blue dark:text-immich-dark-bg',
     onClick,
     shortcut = null,
     shortcutLabel = '',

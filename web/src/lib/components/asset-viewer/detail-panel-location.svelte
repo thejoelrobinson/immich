@@ -40,7 +40,7 @@
     class="flex w-full text-start justify-between place-items-start gap-4 py-4"
     onclick={() => (isOwner ? (isShowChangeLocation = true) : null)}
     title={isOwner ? $t('edit_location') : ''}
-    class:hover:text-primary={isOwner}
+    class:hover:text-walmart-blue={isOwner}
   >
     <div class="flex gap-4">
       <div><Icon icon={mdiMapMarkerOutline} size="24" /></div>
@@ -71,7 +71,7 @@
 {:else if !asset.exifInfo?.city && isOwner}
   <button
     type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:text-primary"
+    class="flex w-full text-start justify-between place-items-start gap-4 py-4 rounded-lg hover:text-walmart-blue"
     onclick={() => (isShowChangeLocation = true)}
     title={$t('add_location')}
   >

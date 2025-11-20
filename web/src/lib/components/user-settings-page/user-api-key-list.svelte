@@ -68,7 +68,7 @@
     {#if keys.length > 0}
       <table class="w-full text-start">
         <thead
-          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-walmart-blue dark:border-bentonville-blue dark:bg-bentonville-blue"
         >
           <tr class="flex w-full place-items-center">
             <th class="w-1/4 text-center text-sm font-medium">{$t('name')}</th>
@@ -77,10 +77,10 @@
             <th class="w-1/4 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
-        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-bentonville-blue">
           {#each keys as key (key.id)}
             <tr
-              class="flex h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+              class="flex h-20 w-full place-items-center text-center dark:text-gray-200 even:bg-subtle/20 odd:bg-subtle/80"
             >
               <td class="w-1/4 text-ellipsis px-4 text-sm overflow-hidden">{key.name}</td>
               <td

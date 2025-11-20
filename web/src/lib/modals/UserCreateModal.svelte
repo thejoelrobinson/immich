@@ -77,7 +77,7 @@
   <ModalBody>
     <form onsubmit={onSubmit} autocomplete="off" id="create-new-user-form">
       {#if success}
-        <p class="text-sm text-immich-primary">{$t('new_user_created')}</p>
+        <p class="text-sm text-walmart-blue">{$t('new_user_created')}</p>
       {/if}
 
       <Stack gap={4}>
