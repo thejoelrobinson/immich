@@ -109,7 +109,7 @@
       <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
-            ​<WalmartLogo variant="inline" />
+            <WalmartLogo variant="inline" />
           </a>
         {/snippet}
 

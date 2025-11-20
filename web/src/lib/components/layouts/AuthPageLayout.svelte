@@ -27,7 +27,7 @@
     {#if withHeader}
       <CardHeader class="mt-6">
         <VStack>
-          ​<WalmartLogo variant="icon" size="giant" />
+          <WalmartLogo variant="icon" size="giant" />
           <Heading size="large" class="font-semibold" color="primary" tag="h1">{title}</Heading>
         </VStack>
       </CardHeader>

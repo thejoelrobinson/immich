@@ -11,7 +11,7 @@
 </script>
 
 <div class="gap-4">
-  ​<WalmartLogo variant="icon" size="giant" class="mb-2" />
+  <WalmartLogo variant="icon" size="giant" class="mb-2" />
   <p class="font-medium mb-6 text-6xl text-walmart-blue">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>

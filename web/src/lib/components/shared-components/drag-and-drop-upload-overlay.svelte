@@ -168,7 +168,7 @@
     transition:fade={{ duration: 250 }}
     ondragover={onDragOver}
   >
-    ​<WalmartLogo variant="icon" size="giant" class="m-16 animate-bounce" />
+    <WalmartLogo variant="icon" size="giant" class="m-16 animate-bounce" />
     <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

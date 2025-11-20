@@ -24,7 +24,7 @@
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-bentonville-blue">
       <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
-        ​<WalmartLogo variant="inline" />
+        <WalmartLogo variant="inline" />
       </a>
     </div>
   </section>

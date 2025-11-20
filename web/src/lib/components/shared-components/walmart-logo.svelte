@@ -3,7 +3,6 @@
   import sparkWhiteUrl from '$lib/assets/logos/WMT-Spark-White-RGB.svg';
   import wordmarkTrueBlueUrl from '$lib/assets/logos/WMT-Wordmark-Standard-TrueBlue-RGB.svg';
   import wordmarkWhiteUrl from '$lib/assets/logos/WMT-Wordmark-Standard-White-RGB.svg';
-  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import type { ClassValue } from 'svelte/elements';
 
   interface Props {
@@ -15,7 +14,7 @@
 
   let { variant = 'icon', size = 'small', class: className = '', forceWhite = false }: Props = $props();
 
-  let isDarkMode = $derived(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let isDarkMode = $derived(typeof globalThis.window !== 'undefined' && globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Determine which logo to show based on variant and theme
   let logoSrc = $derived.by(() => {
@@ -33,17 +32,22 @@
   let altText = $derived(variant === 'inline' ? 'Walmart Wordmark' : 'Walmart Spark');
   let sizeClass = $derived.by(() => {
     switch (size) {
-      case 'tiny':
+      case 'tiny': {
         return 'h-6';
+      }
       case 'small':
-      case 'sm':
+      case 'sm': {
         return 'h-8';
-      case 'lg':
+      }
+      case 'lg': {
         return 'h-12';
-      case 'giant':
+      }
+      case 'giant': {
         return 'h-32';
-      default:
+      }
+      default: {
         return 'h-8';
+      }
     }
   });
 </script>
