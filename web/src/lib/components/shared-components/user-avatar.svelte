@@ -39,16 +39,16 @@
   };
 
   const colorClasses: Record<UserAvatarColor, string> = {
-    primary: 'bg-primary text-light dark:text-light',
-    pink: 'bg-pink-400 text-light dark:text-dark',
-    red: 'bg-red-500 text-light dark:text-dark',
-    yellow: 'bg-yellow-500 text-light dark:text-dark',
-    blue: 'bg-blue-500 text-light dark:text-dark',
-    green: 'bg-green-600 text-light dark:text-dark',
-    purple: 'bg-purple-600 text-light dark:text-dark',
-    orange: 'bg-orange-600 text-light dark:text-dark',
-    gray: 'bg-gray-600 text-light dark:text-dark',
-    amber: 'bg-amber-600 text-light dark:text-dark',
+    primary: 'bg-walmart-blue text-white dark:text-white',
+    pink: 'bg-pink-400 text-white dark:text-white',
+    red: 'bg-red-500 text-white dark:text-white',
+    yellow: 'bg-walmart-yellow text-bentonville-blue dark:text-bentonville-blue',
+    blue: 'bg-everyday-blue text-white dark:text-white',
+    green: 'bg-walmart-green text-white dark:text-white',
+    purple: 'bg-purple-600 text-white dark:text-white',
+    orange: 'bg-orange-600 text-white dark:text-white',
+    gray: 'bg-gray-600 text-white dark:text-white',
+    amber: 'bg-amber-600 text-white dark:text-white',
   };
 
   const sizeClasses: Record<Size, string> = {
@@ -72,7 +72,7 @@
   let title = $derived(label ?? `${user.name} (${user.email})`);
   let interactiveClass = $derived(
     interactive
-      ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
+      ? 'border-2 border-walmart-blue hover:border-sky-blue dark:hover:border-sky-blue dark:border-everyday-blue transition-all duration-200 cursor-pointer'
       : '',
   );
 </script>
