@@ -14,7 +14,7 @@
 
   let { variant = 'icon', size = 'small', class: className = '', forceWhite = false }: Props = $props();
 
-  let isDarkMode = $derived(typeof globalThis.window !== 'undefined' && globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches);
+  let isDarkMode = $derived(globalThis.window !== undefined && globalThis.window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Determine which logo to show based on variant and theme
   let logoSrc = $derived.by(() => {
