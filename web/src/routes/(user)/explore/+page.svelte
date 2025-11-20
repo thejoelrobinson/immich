@@ -45,10 +45,10 @@
   {#if hasPeople}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('people')}</p>
+        <p class="mb-4 font-medium dark:text-gray-200">{$t('people')}</p>
         <a
           href={AppRoute.PEOPLE}
-          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          class="pe-4 text-sm font-medium hover:text-walmart-blue dark:text-gray-200 dark:hover:text-sky-blue"
           draggable="false">{$t('view_all')}</a
         >
       </div>
@@ -79,10 +79,10 @@
   {#if places.length > 0}
     <div class="mb-6 mt-2">
       <div class="flex justify-between">
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('places')}</p>
+        <p class="mb-4 font-medium dark:text-gray-200">{$t('places')}</p>
         <a
           href={AppRoute.PLACES}
-          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          class="pe-4 text-sm font-medium hover:text-walmart-blue dark:text-gray-200 dark:hover:text-sky-blue"
           draggable="false">{$t('view_all')}</a
         >
       </div>

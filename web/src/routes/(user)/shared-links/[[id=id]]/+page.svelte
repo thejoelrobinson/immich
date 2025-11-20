@@ -83,7 +83,7 @@
   <div class="w-full max-w-3xl m-auto">
     {#if sharedLinks.length === 0}
       <div
-        class="flex place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
+        class="flex place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-everyday-blue dark:text-gray-300 p-12"
       >
         <p>{$t('you_dont_have_any_shared_links')}</p>
       </div>

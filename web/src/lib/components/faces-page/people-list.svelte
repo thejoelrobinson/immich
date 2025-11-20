@@ -47,7 +47,7 @@
 </div>
 
 <div
-  class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray mt-6"
+  class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-everyday-blue mt-6"
   style:max-height={screenHeight - 400 + 'px'}
 >
   <div class="grid-col-2 grid gap-8 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10">

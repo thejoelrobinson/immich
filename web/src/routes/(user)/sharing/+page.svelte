@@ -58,7 +58,7 @@
     {#if data.partners.length > 0}
       <div class="mb-6 mt-2">
         <div>
-          <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('partners')}</p>
+          <p class="mb-4 font-medium dark:text-gray-200">{$t('partners')}</p>
         </div>
 
         <div class="flex flex-row flex-wrap gap-4">
@@ -69,10 +69,10 @@
             >
               <UserAvatar user={partner} size="lg" />
               <div class="text-start">
-                <p class="text-immich-fg dark:text-immich-dark-fg">
+                <p class="text-bentonville-blue dark:text-gray-200">
                   {partner.name}
                 </p>
-                <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
+                <p class="text-sm text-bentonville-blue/75 dark:text-gray-200/75">
                   {partner.email}
                 </p>
               </div>
@@ -81,12 +81,12 @@
         </div>
       </div>
 
-      <hr class="mb-4 dark:border-immich-dark-gray" />
+      <hr class="mb-4 dark:border-everyday-blue" />
     {/if}
 
     <div class="mb-6 mt-2">
       <div>
-        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('albums')}</p>
+        <p class="mb-4 font-medium dark:text-gray-200">{$t('albums')}</p>
       </div>
 
       <div>

@@ -502,11 +502,11 @@
           {#if album.assetCount === 0}
             <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
               <div class="w-75">
-                <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                <p class="uppercase text-xs dark:text-gray-200">{$t('add_photos')}</p>
                 <button
                   type="button"
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-bentonville-blue transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-walmart-blue dark:border-none dark:text-gray-200 dark:hover:text-sky-blue"
                 >
                   <span class="text-primary">
                     <Icon icon={mdiPlus} size="24" />
@@ -678,7 +678,7 @@
       {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
         <ControlAppBar onClose={handleCloseSelectAssets}>
           {#snippet leading()}
-            <p class="text-lg dark:text-immich-dark-fg">
+            <p class="text-lg dark:text-gray-200">
               {#if !timelineInteraction.selectionActive}
                 {$t('add_to_album')}
               {:else}
@@ -710,7 +710,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-everyday-blue"
         translate="yes"
       >
         <ActivityViewer

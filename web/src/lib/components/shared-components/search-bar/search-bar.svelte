@@ -234,7 +234,7 @@
         id="main-search-bar"
         class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-bentonville-blue/75 dark:text-gray-200 focus:border-walmart-blue focus:ring-2 focus:ring-sky-blue/30
         {showClearIcon ? 'pe-22.5' : 'pe-14'}
-        {grayTheme ? 'dark:bg-bentonville-blue' : 'dark:bg-immich-dark-bg'}
+        {grayTheme ? 'dark:bg-bentonville-blue' : 'dark:bg-bentonville-blue'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
         {searchStore.isSearchEnabled ? 'border-walmart-blue dark:border-everyday-blue bg-white' : 'border-transparent'}"
         placeholder={$t('search_your_photos')}

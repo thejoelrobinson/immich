@@ -56,7 +56,7 @@
     <section class="w-full pb-28 lg:w-212.5">
       <table class="my-5 w-full text-start">
         <thead
-          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-everyday-blue dark:bg-everyday-blue"
         >
           <tr class="flex w-full place-items-center">
             <th class="w-8/12 sm:w-5/12 lg:w-6/12 xl:w-4/12 2xl:w-5/12 text-center text-sm font-medium"
@@ -67,11 +67,11 @@
             <th class="w-4/12 lg:w-3/12 xl:w-2/12 text-center text-sm font-medium">{$t('action')}</th>
           </tr>
         </thead>
-        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-everyday-blue">
           {#each allUsers as user (user.id)}
             {@const UserAdminActions = getUserAdminActions($t, user)}
             <tr
-              class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {user.deletedAt
+              class="flex h-20 overflow-hidden w-full place-items-center text-center dark:text-gray-200 {user.deletedAt
                 ? 'bg-red-300 dark:bg-red-900'
                 : 'even:bg-subtle/20 odd:bg-subtle/80'}"
             >

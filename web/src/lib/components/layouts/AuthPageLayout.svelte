@@ -1,6 +1,6 @@
 <script lang="ts">
   import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
-import { Card, CardBody, CardHeader, Heading, immichLogo, VStack } from '@immich/ui';
+import { Card, CardBody, CardHeader, Heading, VStack } from '@immich/ui';
   import type { Snippet } from 'svelte';
   interface Props {
     title?: string;
@@ -13,13 +13,13 @@ import { Card, CardBody, CardHeader, Heading, immichLogo, VStack } from '@immich
 
 <section class="min-w-dvw flex min-h-dvh items-center justify-center relative">
   <div class="absolute -z-10 w-full h-full flex place-items-center place-content-center">
-    <img
-      src={immichLogo}
+    <WalmartLogo
+      variant="inline"
+      size="giant"
       class="max-w-(--breakpoint-md) mx-auto h-full mb-2 antialiased overflow-hidden"
-      alt="Immich logo"
     />
     <div
-      class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-immich-dark-bg/20"
+      class="w-full h-[99%] absolute start-0 top-0 backdrop-blur-[200px] bg-transparent dark:bg-bentonville-blue/20"
     ></div>
   </div>
 

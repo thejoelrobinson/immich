@@ -533,7 +533,7 @@
 {/if}
 
 {#if $preferences?.tags?.enabled}
-  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-gray-200">
+  <section class="relative px-2 pb-12 dark:bg-bentonville-blue dark:text-gray-200">
     <DetailPanelTags {asset} {isOwner} />
   </section>
 {/if}

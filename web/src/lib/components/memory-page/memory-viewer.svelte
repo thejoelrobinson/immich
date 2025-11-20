@@ -357,7 +357,7 @@
 
 <section
   id="memory-viewer"
-  class="w-full bg-immich-dark-gray"
+  class="w-full bg-everyday-blue"
   bind:this={memoryWrapper}
   use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
 >
@@ -626,7 +626,7 @@
 
 {#if current}
   <!-- GALLERY VIEWER -->
-  <section class="bg-immich-dark-gray p-4">
+  <section class="bg-everyday-blue p-4">
     <div
       class="sticky mb-10 flex place-content-center place-items-center transition-all dark"
       class:opacity-0={galleryInView}

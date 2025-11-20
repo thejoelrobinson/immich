@@ -72,7 +72,7 @@
       {#if libraries.length > 0}
         <table class="w-3/4 text-start">
           <thead
-            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+            class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-primary dark:border-everyday-blue dark:bg-everyday-blue"
           >
             <tr class="grid grid-cols-6 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('name')}</th>
@@ -83,12 +83,12 @@
               <th class="text-center text-sm font-medium"></th>
             </tr>
           </thead>
-          <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+          <tbody class="block overflow-y-auto rounded-md border dark:border-everyday-blue">
             {#each libraries as library (library.id + library.name)}
               {@const { photos, usage, videos } = statistics[library.id]}
               {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(usage, 0)}
               <tr
-                class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-immich-dark-fg even:bg-subtle/20 odd:bg-subtle/80"
+                class="grid grid-cols-6 h-20 w-full place-items-center text-center dark:text-gray-200 even:bg-subtle/20 odd:bg-subtle/80"
               >
                 <td class="text-ellipsis px-4 text-sm">{library.name}</td>
                 <td class="text-ellipsis px-4 text-sm">

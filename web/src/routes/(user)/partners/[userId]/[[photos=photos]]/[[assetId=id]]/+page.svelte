@@ -55,7 +55,7 @@
 {:else}
   <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
     {#snippet leading()}
-      <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
+      <p class="whitespace-nowrap text-bentonville-blue dark:text-gray-200">
         {data.partner.name}'s photos
       </p>
     {/snippet}

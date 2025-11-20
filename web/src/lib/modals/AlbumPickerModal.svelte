@@ -165,7 +165,7 @@
         {/each}
       {:else}
         <input
-          class="border-b-4 border-immich-bg px-6 py-2 text-2xl focus:border-walmart-blue dark:border-bentonville-blue dark:focus:border-sky-blue"
+          class="border-b-4 border-white px-6 py-2 text-2xl focus:border-walmart-blue dark:border-bentonville-blue dark:focus:border-sky-blue"
           placeholder={$t('search')}
           {onkeydown}
           bind:value={search}

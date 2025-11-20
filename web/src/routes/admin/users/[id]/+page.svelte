@@ -214,7 +214,7 @@
 
             {#if user.quotaSizeInBytes !== null && user.quotaSizeInBytes >= 0}
               <div
-                class="storage-status p-4 mt-4 bg-gray-100 dark:bg-immich-dark-primary/10 rounded-lg text-sm w-full"
+                class="storage-status p-4 mt-4 bg-gray-100 dark:bg-sky-blue/10 rounded-lg text-sm w-full"
                 title={$t('storage_usage', {
                   values: {
                     used: getByteUnitString(usedBytes, $locale, 3),
@@ -222,7 +222,7 @@
                   },
                 })}
               >
-                <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
+                <p class="font-medium text-everyday-blue dark:text-white mb-2">{$t('storage')}</p>
                 <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
                   <div class="h-[7px] rounded-full {getUsageClass()}" style="width: {usedPercentage}%"></div>
                 </div>
