@@ -232,11 +232,11 @@
         type="text"
         name="q"
         id="main-search-bar"
-        class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
+        class="w-full transition-all border-2 ps-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg focus:border-walmart-blue focus:ring-2 focus:ring-sky-blue/30
         {showClearIcon ? 'pe-22.5' : 'pe-14'}
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
-        {searchStore.isSearchEnabled ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"
+        {searchStore.isSearchEnabled ? 'border-walmart-blue dark:border-everyday-blue bg-white' : 'border-transparent'}"
         placeholder={$t('search_your_photos')}
         required
         pattern="^(?!m:$).*$"
@@ -294,7 +294,7 @@
         class:end-28={value.length > 0}
       >
         <p
-          class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs"
+          class="bg-walmart-blue text-white dark:bg-sky-blue dark:text-bentonville-blue rounded-full px-3 py-1 text-xs font-medium"
         >
           {getSearchTypeText()}
         </p>
