@@ -84,6 +84,12 @@
     --immich-dark-fg: 255 255 255;
     /* EVERYDAY BLUE #4DBDF5 */
     --immich-dark-gray: 77 189 245;
+
+    /* @immich/ui library color variables */
+    --immich-ui-primary: 0 83 226;
+    --immich-ui-light: 255 255 255;
+    --immich-ui-dark: 0 30 96;
+    --immich-ui-default-border: 209 213 219;
   }
 
   *,
