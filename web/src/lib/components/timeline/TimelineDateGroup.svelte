@@ -158,7 +158,7 @@
   >
     <!-- Date group title -->
     <div
-      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-immich-fg dark:text-immich-dark-fg md:text-sm"
+      class="flex pt-7 pb-5 max-md:pt-5 max-md:pb-3 h-6 place-items-center text-xs font-medium text-bentonville-blue dark:text-gray-200 md:text-sm"
       style:width={dayGroup.width + 'px'}
     >
       {#if !singleSelect}
@@ -170,9 +170,9 @@
           onkeydown={() => handleSelectGroup(dayGroup.groupTitle, assetsSnapshot(dayGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dayGroup.groupTitle)}
-            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon icon={mdiCheckCircle} size="24" class="text-walmart-blue dark:text-sky-blue" />
           {:else}
-            <Icon icon={mdiCircleOutline} size="24" color="#757575" />
+            <Icon icon={mdiCircleOutline} size="24" class="text-gray-400 dark:text-gray-500" />
           {/if}
         </div>
       {/if}
