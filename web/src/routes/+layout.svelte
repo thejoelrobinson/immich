@@ -54,7 +54,7 @@
   onMount(() => {
     const element = document.querySelector('#stencil');
     element?.remove();
-    // if the browser theme changes, changes the Immich theme too
+    // if the browser theme changes, changes the Walmart theme too
   });
 
   eventManager.emit('AppInit');
@@ -125,7 +125,7 @@
 <OnEvents {onReleaseEvent} />
 
 <svelte:head>
-  <title>{page.data.meta?.title || 'Web'} - Immich</title>
+  <title>{page.data.meta?.title || 'Web'} - Walmart Photo Manager</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="currentColor" />
   <AppleHeader />
