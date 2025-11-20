@@ -40,12 +40,12 @@
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-primary text-sm" for="{name}-select">{label}</label>
+    <label class="font-medium text-immich-fg dark:text-white text-sm" for="{name}-select">{label}</label>
 
     {#if isEdited}
       <div
         transition:fly={{ x: 10, duration: 200, easing: quintOut }}
-        class="rounded-full bg-orange-100 px-2 text-[10px] text-orange-900"
+        class="rounded-full bg-walmart-yellow px-2 text-[10px] text-bentonville-blue font-medium"
       >
         {$t('unsaved_change')}
       </div>
@@ -64,8 +64,8 @@
       size="1.2em"
       aria-hidden
       class="pointer-events-none end-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
-        ? 'text-immich-bg'
-        : 'text-immich-fg dark:text-immich-bg'}"
+        ? 'text-gray-400 dark:text-gray-600'
+        : 'text-immich-fg dark:text-white'}"
     />
     <select
       class="immich-form-input w-full appearance-none row-start-1 col-start-1 pe-6!"
