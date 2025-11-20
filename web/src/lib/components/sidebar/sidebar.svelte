@@ -35,10 +35,11 @@
   id="sidebar"
   aria-label={ariaLabel}
   tabindex="-1"
-  class="immich-scrollbar relative z-1 w-0 sidebar:w-64 overflow-y-auto overflow-x-hidden pt-8 transition-all duration-200 bg-light"
+  class="immich-scrollbar relative z-1 w-0 sidebar:w-64 overflow-y-auto overflow-x-hidden pt-8 transition-all duration-200 bg-light dark:bg-bentonville-blue/10"
   class:shadow-2xl={isExpanded}
-  class:dark:border-e-immich-dark-gray={isExpanded}
   class:border-r={isExpanded}
+  class:border-gray-200={isExpanded}
+  class:dark:border-everyday-blue={isExpanded}
   class:w-[min(100vw,16rem)]={sidebarStore.isOpen}
   data-testid="sidebar-parent"
   inert={isHidden}
