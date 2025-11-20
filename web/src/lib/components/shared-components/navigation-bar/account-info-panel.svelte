@@ -32,11 +32,11 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute z-1 end-6 top-19 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute z-1 end-6 top-19 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 shadow-lg dark:border dark:border-everyday-blue dark:bg-bentonville-blue/20"
   use:focusTrap
 >
   <div
-    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
+    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-t-3xl bg-white p-4 dark:bg-bentonville-blue/10"
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
@@ -55,10 +55,10 @@
       </div>
     </div>
     <div>
-      <p class="text-center text-lg font-medium text-primary">
+      <p class="text-center text-lg font-medium text-walmart-blue dark:text-sky-blue">
         {$user.name}
       </p>
-      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
+      <p class="text-sm text-gray-500 dark:text-gray-300">{$user.email}</p>
     </div>
 
     <div class="flex flex-col gap-1">
@@ -69,7 +69,7 @@
         color="secondary"
         variant="ghost"
         shape="round"
-        class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+        class="border border-gray-300 dark:border-everyday-blue dark:bg-bentonville-blue/20 dark:hover:bg-everyday-blue/20 hover:bg-walmart-blue/10 dark:text-white"
       >
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
           <Icon icon={mdiCog} size="18" aria-hidden />
@@ -85,7 +85,7 @@
           size="small"
           color="secondary"
           aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
-          class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+          class="border border-gray-300 dark:border-everyday-blue dark:bg-bentonville-blue/20 dark:hover:bg-everyday-blue/20 hover:bg-walmart-blue/10 dark:text-white"
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon icon={mdiWrench} size="18" aria-hidden />
@@ -98,7 +98,7 @@
 
   <div class="mb-4 flex flex-col">
     <Button
-      class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-immich-dark-primary/10"
+      class="m-1 mx-4 rounded-none rounded-b-3xl bg-white p-3 dark:bg-bentonville-blue/10"
       onclick={onLogout}
       leadingIcon={mdiLogout}
       variant="ghost"
@@ -107,7 +107,7 @@
 
     <button
       type="button"
-      class="text-center mt-4 underline text-xs text-primary"
+      class="text-center mt-4 underline text-xs text-walmart-blue dark:text-sky-blue"
       onclick={async () => {
         onClose();
         if (info) {
