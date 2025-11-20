@@ -4,11 +4,11 @@
 /* @import '/usr/ui/dist/theme/default.css'; */
 
 @utility immich-form-input {
-  @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+  @apply rounded-full bg-gray-50 px-4 py-3 text-sm border-2 border-gray-300 focus:border-immich-primary focus:ring-2 focus:ring-sky-blue placeholder:text-gray-500 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-bentonville-blue/20 dark:text-white dark:border-everyday-blue dark:placeholder:text-gray-400 dark:focus:ring-sky-blue;
 }
 
 @utility immich-form-label {
-  @apply font-medium text-gray-500 dark:text-gray-300;
+  @apply font-medium text-immich-fg dark:text-white;
 }
 
 @utility immich-scrollbar {
@@ -46,6 +46,14 @@
   --color-immich-dark-bg: rgb(var(--immich-dark-bg));
   --color-immich-dark-fg: rgb(var(--immich-dark-fg));
   --color-immich-dark-gray: rgb(var(--immich-dark-gray));
+
+  /* Walmart 2025 Brand Colors */
+  --color-walmart-blue: rgb(0 113 206);
+  --color-walmart-yellow: rgb(255 194 32);
+  --color-bentonville-blue: rgb(4 30 66);
+  --color-everyday-blue: rgb(0 120 206);
+  --color-sky-blue: rgb(130 206 244);
+  --color-walmart-green: rgb(29 185 84);
 }
 
 @theme {
@@ -64,16 +72,16 @@
 
 @layer base {
   :root {
-    /* light */
-    --immich-primary: 66 80 175;
+    /* light - Walmart Blue */
+    --immich-primary: 0 113 206;
     --immich-bg: 255 255 255;
-    --immich-fg: 0 0 0;
+    --immich-fg: 4 30 66;
 
-    /* dark */
-    --immich-dark-primary: 172 203 250;
-    --immich-dark-bg: 10 10 10;
-    --immich-dark-fg: 229 231 235;
-    --immich-dark-gray: 33 33 33;
+    /* dark - Sky Blue & Bentonville Blue */
+    --immich-dark-primary: 130 206 244;
+    --immich-dark-bg: 4 30 66;
+    --immich-dark-fg: 255 255 255;
+    --immich-dark-gray: 0 120 206;
   }
 
   *,
@@ -88,29 +96,18 @@
   [role='button']:not(:disabled) {
     cursor: pointer;
   }
+
+  /* Walmart pill-shaped buttons */
+  button:not(.square-button):not([data-no-radius='true']),
+  [role='button']:not(.square-button):not([data-no-radius='true']) {
+    @apply rounded-full transition-all duration-200;
+  }
 }
 
 @layer utilities {
-  @font-face {
-    font-family: 'Overpass';
-    src: url('$lib/assets/fonts/overpass/Overpass.ttf') format('truetype-variations');
-    font-weight: 1 999;
-    font-style: normal;
-    ascent-override: 106.25%;
-    size-adjust: 106.25%;
-  }
-
-  @font-face {
-    font-family: 'Overpass Mono';
-    src: url('$lib/assets/fonts/overpass/OverpassMono.ttf') format('truetype-variations');
-    font-weight: 1 999;
-    font-style: monospace;
-    ascent-override: 106.25%;
-    size-adjust: 106.25%;
-  }
-
   :root {
-    font-family: 'Overpass', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+                 Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: calc(4.5rem + 4px);
     --navbar-height-md: calc(4.5rem + 4px - 14px);
@@ -145,15 +142,15 @@
     border-radius: 16px;
   }
 
-  /* Handle on hover */
+  /* Handle on hover - Walmart Blue */
   html::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
+    background: rgba(0, 113, 206, 0.7);
     border-radius: 16px;
   }
 
   body {
     margin: 0;
-    color: #3a3a3a;
+    color: rgb(var(--immich-fg));
   }
 
   input:focus-visible {
