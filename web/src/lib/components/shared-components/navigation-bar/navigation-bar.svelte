@@ -54,7 +54,7 @@
   <div
     class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
       ? ''
-      : 'border-b'}"
+      : 'border-b border-gray-200 dark:border-everyday-blue'}"
   >
     <div class="flex flex-row gap-1 mx-4 items-center">
       <IconButton
@@ -146,7 +146,7 @@
 
             {#if hasUnreadNotifications}
               <div
-                class="pointer-events-none absolute border top-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-light"
+                class="pointer-events-none absolute border border-walmart-blue top-0 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-walmart-blue text-[10px] font-bold text-white"
               >
                 {notificationManager.notifications.length}
               </div>
