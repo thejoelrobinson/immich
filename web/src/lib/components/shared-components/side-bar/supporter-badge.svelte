@@ -11,7 +11,7 @@
 </script>
 
 <div
-  class="flex gap-1 mt-2 place-items-center dark:bg-immich-dark-primary/10 bg-gray-200/50 p-2 rounded-lg bg-clip-padding border border-transparent relative supporter-effect"
+  class="flex gap-1 mt-2 place-items-center dark:bg-walmart-blue/5 bg-walmart-blue/5 p-2 rounded-lg bg-clip-padding border border-walmart-blue/20 dark:border-walmart-blue/30 relative supporter-effect"
   class:place-content-center={centered}
 >
   <Logo variant="icon" size={logoSize === 'sm' ? 'tiny' : 'small'} />
