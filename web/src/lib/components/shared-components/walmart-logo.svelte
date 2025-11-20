@@ -10,15 +10,19 @@
     variant?: 'icon' | 'inline';
     size?: 'tiny' | 'small' | 'sm' | 'lg' | 'giant';
     class?: ClassValue;
+    forceWhite?: boolean;
   }
 
-  let { variant = 'icon', size = 'small', class: className = '' }: Props = $props();
+  let { variant = 'icon', size = 'small', class: className = '', forceWhite = false }: Props = $props();
 
   let isDarkMode = $derived(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   // Determine which logo to show based on variant and theme
   let logoSrc = $derived.by(() => {
-    if (variant === 'inline') {
+    if (forceWhite) {
+      // Force white logos for header/blue background
+      return variant === 'inline' ? wordmarkWhiteUrl : sparkWhiteUrl;
+    } else if (variant === 'inline') {
       return isDarkMode ? wordmarkWhiteUrl : wordmarkTrueBlueUrl;
     } else {
       // icon variant - use Spark logo

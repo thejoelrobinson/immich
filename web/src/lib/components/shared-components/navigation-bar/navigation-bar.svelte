@@ -50,12 +50,12 @@
 
 <svelte:window bind:innerWidth />
 
-<nav id="dashboard-navbar" class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm">
+<nav id="dashboard-navbar" class="max-md:h-(--navbar-height-md) h-(--navbar-height) w-dvw text-sm bg-walmart-blue">
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
       ? ''
-      : 'border-b border-gray-200 dark:border-everyday-blue'}"
+      : 'border-b border-walmart-blue'}"
   >
     <div class="flex flex-row gap-1 mx-4 items-center">
       <IconButton
@@ -75,10 +75,10 @@
             event.stopPropagation();
           }
         }}
-        class="sidebar:hidden"
+        class="sidebar:hidden text-white hover:text-white"
       />
       <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
-        <WalmartLogo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
+        <WalmartLogo variant="inline" forceWhite={true} class="max-md:h-12 h-8" />
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
@@ -98,7 +98,7 @@
             icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
-            class="sm:hidden"
+            class="sm:hidden text-white hover:text-white"
             aria-label={$t('go_to_search')}
           />
         {/if}
@@ -107,7 +107,7 @@
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}
-            class="hidden lg:flex"
+            class="hidden lg:flex text-white hover:text-white"
             variant="ghost"
             size="medium"
             color="secondary"
@@ -122,7 +122,7 @@
             title={$t('upload')}
             aria-label={$t('upload')}
             icon={mdiTrayArrowUp}
-            class="lg:hidden"
+            class="lg:hidden text-white hover:text-white"
           />
         {/if}
 
@@ -143,6 +143,7 @@
               icon={hasUnreadNotifications ? mdiBellBadge : mdiBellOutline}
               onclick={() => (shouldShowNotificationPanel = !shouldShowNotificationPanel)}
               aria-label={$t('notifications')}
+              class="text-white hover:text-white"
             />
 
             {#if hasUnreadNotifications}
