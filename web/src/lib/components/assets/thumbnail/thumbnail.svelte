@@ -226,7 +226,7 @@
   <!-- Outline on focus -->
   <div
     class={[
-      'pointer-events-none absolute z-1 size-full outline-hidden outline-4 -outline-offset-4 outline-immich-primary',
+      'pointer-events-none absolute z-1 size-full outline-hidden outline-4 -outline-offset-4 outline-walmart-blue',
       { 'rounded-xl': selected },
     ]}
     data-outline
@@ -388,7 +388,7 @@
 
     {#if selectionCandidate}
       <div
-        class="absolute top-0 h-full w-full bg-immich-primary opacity-40"
+        class="absolute top-0 h-full w-full bg-walmart-blue opacity-40"
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
       ></div>
@@ -408,8 +408,8 @@
         {#if disabled}
           <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
-          <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
+          <div class="rounded-full bg-[#E8F2FF] dark:bg-[#232932]">
+            <Icon icon={mdiCheckCircle} size="24" class="text-walmart-blue dark:text-sky-blue" />
           </div>
         {:else}
           <Icon icon={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
