@@ -38,7 +38,7 @@
       <button
         type="button"
         aria-label={$t('recent-albums')}
-        class="relative flex cursor-default pt-4 pb-4 select-none justify-center hover:cursor-pointer hover:bg-subtle hover:fill-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded h-fill"
+        class="relative flex cursor-default pt-4 pb-4 select-none justify-center hover:cursor-pointer hover:bg-walmart-blue/10 hover:fill-walmart-blue hover:text-walmart-blue dark:text-gray-300 dark:hover:bg-walmart-blue/10 dark:hover:text-sky-blue rounded h-fill transition-colors"
         onclick={() => (dropdownOpen = !dropdownOpen)}
       >
         <Icon
@@ -58,9 +58,9 @@
     data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
     draggable="false"
     aria-current={isSelected ? 'page' : undefined}
-    class="flex w-full place-items-center gap-4 rounded-e-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-subtle hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
+    class="flex w-full place-items-center gap-4 rounded-e-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-walmart-blue/10 hover:text-walmart-blue dark:text-gray-300 dark:hover:bg-walmart-blue/10 dark:hover:text-sky-blue
     {isSelected
-      ? 'bg-immich-primary/10 dark:text-primary text-primary hover:bg-immich-primary/10 dark:bg-immich-dark-primary/10'
+      ? 'bg-walmart-blue/10 dark:text-sky-blue text-walmart-blue hover:bg-walmart-blue/10 dark:bg-walmart-blue/10'
       : ''}"
   >
     <div class="flex w-full place-items-center gap-4 ps-5 overflow-hidden truncate">

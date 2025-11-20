@@ -1,0 +1,225 @@
+================================================================================
+IMMICH WEB - FORM COMPONENTS STYLING ANALYSIS SUMMARY
+================================================================================
+
+GENERATED: 2025-11-20
+LOCATION: /Users/j0r14p5/Library/CloudStorage/OneDrive-WalmartInc/Joel's Files/Coding/Immich/web
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+1. COMPONENT INVENTORY
+   - RadioButton.svelte       (9 files use)      STATUS: ❌ NEEDS WORK
+   - Checkbox (@immich/ui)    (8 files use)      STATUS: ✅ GOOD
+   - Switch (@immich/ui)      (33 files use)     STATUS: ✅ GOOD (MOST USED)
+   - Select (native)          (12 files use)     STATUS: ⚠️ INCONSISTENT
+   - Dropdown (custom)        (variable)         STATUS: ⚠️ INCONSISTENT
+   - SettingSwitch wrapper    (27 files use)     STATUS: ✅ GOOD
+   - SettingSelect wrapper    (12 files use)     STATUS: ⚠️ INCONSISTENT
+   - SettingCheckboxes wrapper(1 file uses)      STATUS: ✅ GOOD
+
+   TOTAL FILES AFFECTED: 80+ across entire codebase
+
+================================================================================
+CURRENT STYLING PATTERNS
+================================================================================
+
+Border Radius:
+  - Inputs (setting-select):        rounded-full (pill-shaped, 9999px)
+  - Switch components:              rounded-full
+  - Checkbox components:            rounded-md (4px) to rounded-xl (12px)
+  - Dropdown menu:                  rounded-2xl (16px)
+  - @immich/ui Select:              rounded-lg (8px) to rounded-xl (12px)
+
+Focus States:
+  - Text inputs:                    2px ring, sky-blue color with border change
+  - Checkboxes:                     2px ring with offset
+  - Switches:                       Partial styling
+  - RadioButtons:                   Minimal (just outline)
+
+Walmart Brand Colors Applied:
+  - Primary (Light):                Walmart Blue #0071CE
+  - Primary (Dark):                 Sky Blue #82CEF4
+  - Borders (Light):                Gray-300
+  - Borders (Dark):                 Everyday Blue #0078CE
+  - Focus Ring:                     Sky Blue #82CEF4
+  - Dark Background:                Bentonville Blue/20 #041E42
+
+================================================================================
+CRITICAL ISSUES IDENTIFIED
+================================================================================
+
+ISSUE 1: RadioButton Lacks Styling
+  Location: /src/lib/elements/RadioButton.svelte
+  Problem:  Uses browser default radio appearance
+  Impact:   9 files, no Walmart branding
+  Fix:      Add appearance-none + custom styling
+
+ISSUE 2: Inconsistent Border Radius
+  Problem:  Mix of rounded-full, rounded-2xl, rounded-lg, rounded-md
+  Impact:   Visual inconsistency across forms
+  Fix:      Standardize to rounded-lg for all form inputs
+
+ISSUE 3: Select Implementation Choice
+  Problem:  Native <select> in settings vs advanced @immich/ui Select
+  Impact:   Visual inconsistency, limited UX
+  Fix:      Migrate setting-select to use @immich/ui Select
+
+ISSUE 4: Dropdown Styling Differences
+  Location: /src/lib/elements/Dropdown.svelte
+  Problem:  rounded-2xl (wrong), bg-gray-100 (inconsistent)
+  Impact:   Doesn't match other inputs
+  Fix:      Update to rounded-lg, bg-gray-50
+
+================================================================================
+RECOMMENDED WALMART STYLING APPROACH
+================================================================================
+
+Unified Standards:
+  Border Radius:      rounded-lg (8px) for all form controls
+  Focus Ring:         2px sky-blue (#82CEF4) with 2px offset
+  Focus Border:       walmart-blue (#0071CE)
+  Disabled:           opacity-50, cursor-not-allowed
+  Transition:         200ms all ease
+  Spacing:            Consistent 8px/12px gaps
+
+Component Specifics:
+  RadioButton:        Custom appearance-none with Walmart Blue checked state
+  Checkbox:           Keep @immich/ui (well-implemented)
+  Switch:             Keep @immich/ui (well-implemented)
+  Select:             Migrate to @immich/ui for consistency
+  Dropdown:           Update border-radius and background color
+
+================================================================================
+CSS UTILITY CURRENTLY USED
+================================================================================
+
+Location: /src/app.css:6-8
+
+@utility immich-form-input {
+  rounded-full bg-gray-50 px-4 py-3 text-sm
+  border-2 border-gray-300
+  focus:border-immich-primary focus:ring-2 focus:ring-sky-blue
+  placeholder:text-gray-500
+  disabled:cursor-not-allowed disabled:opacity-50
+  dark:bg-bentonville-blue/20 dark:text-white
+  dark:border-everyday-blue dark:placeholder:text-gray-400
+  dark:focus:ring-sky-blue
+}
+
+Recommendation: Change rounded-full → rounded-lg for consistency
+
+================================================================================
+FILES TO MODIFY (PRIORITY ORDER)
+================================================================================
+
+PHASE 1 (High Priority - Breaking Changes):
+  [ ] /src/lib/elements/RadioButton.svelte                   Est: 1-2 hrs
+  [ ] /src/app.css (update immich-form-input utility)        Est: 30 min
+  [ ] /src/lib/components/shared-components/settings/setting-select.svelte
+                                                              Est: 2-3 hrs
+
+PHASE 2 (Medium Priority - Consistency):
+  [ ] /src/lib/elements/Dropdown.svelte                      Est: 1 hr
+  [ ] Test 80+ files using these components                  Est: 2-3 hrs
+
+PHASE 3 (Optional - Enhancements):
+  [ ] Add transitions to all components
+  [ ] Add hover states
+  [ ] Create component documentation
+
+Total Estimated Effort: 10-15 hours (2-3 days)
+
+================================================================================
+IMPORT PATTERNS
+================================================================================
+
+Most Common:
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
+  (Used in: 27 files - AlbumOptionsModal, SlideshowSettingsModal, etc.)
+
+Common:
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  (Used in: 12 files - LibraryUserPickerModal, ObtainiumConfigModal, etc.)
+
+Direct @immich/ui imports:
+  import { Switch, Checkbox, Select } from '@immich/ui';
+  (Switch: 33 files, Checkbox: 8 files)
+
+================================================================================
+DARK MODE STATUS
+================================================================================
+
+Current Implementation: GOOD
+  - All components support dark mode via dark: utilities
+  - Walmart colors adapted for dark background
+  - Focus rings remain consistent
+
+Verification Needed:
+  [ ] Test all components in dark mode
+  [ ] Verify contrast ratios (WCAG AA: 4.5:1 minimum)
+  [ ] Confirm Sky Blue visibility on dark backgrounds
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+When making updates, verify:
+  [ ] Light mode appearance correct
+  [ ] Dark mode appearance correct
+  [ ] Focus states visible (2px ring)
+  [ ] Disabled states work (50% opacity)
+  [ ] Keyboard navigation functional
+  [ ] Screen reader announces labels
+  [ ] Touch targets at least 44x44px
+  [ ] Contrast ratios meet WCAG AA
+  [ ] Transitions smooth (200ms)
+  [ ] Mobile responsive
+  [ ] No regressions in 80+ dependent files
+
+================================================================================
+SUPPORTING DOCUMENTATION
+================================================================================
+
+FULL ANALYSIS:
+  File: /Users/j0r14p5/Library/CloudStorage/OneDrive-WalmartInc/Joel's Files/Coding/Immich/web/COMPONENT_STYLING_ANALYSIS.md
+  Content: 10-section comprehensive analysis with detailed breakdowns
+
+CODE REFERENCE:
+  File: /Users/j0r14p5/Library/CloudStorage/OneDrive-WalmartInc/Joel's Files/Coding/Immich/web/COMPONENT_CODE_REFERENCE.md
+  Content: Code examples, current implementations, recommended updates
+
+================================================================================
+WALMART COLOR REFERENCE
+================================================================================
+
+Primary Colors:
+  --color-walmart-blue:       rgb(0 113 206)      #0071CE
+  --color-sky-blue:           rgb(130 206 244)    #82CEF4
+
+Secondary Colors:
+  --color-bentonville-blue:   rgb(4 30 66)        #041E42
+  --color-everyday-blue:      rgb(0 120 206)      #0078CE
+  --color-walmart-green:      rgb(29 185 84)      #1DB954
+  --color-walmart-yellow:     rgb(255 194 32)     #FFC220
+
+Usage:
+  Focus Ring:     Sky Blue
+  Primary Border: Walmart Blue (light) or Sky Blue (dark)
+  Backgrounds:    Gray-50 (light) or Bentonville Blue/20 (dark)
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Review this analysis with team
+2. Prioritize changes (recommend: Phase 1 first)
+3. Create feature branch for updates
+4. Implement RadioButton styling
+5. Update immich-form-input utility
+6. Migrate setting-select component
+7. Run comprehensive testing across 80+ files
+8. Deploy with proper documentation
+
+================================================================================
