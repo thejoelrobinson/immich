@@ -47,12 +47,12 @@
   --color-immich-dark-fg: rgb(var(--immich-dark-fg));
   --color-immich-dark-gray: rgb(var(--immich-dark-gray));
 
-  /* Walmart 2025 Brand Colors */
-  --color-walmart-blue: rgb(0 113 206);
+  /* Walmart 2025 Brand Colors - Official Hex Codes */
+  --color-walmart-blue: rgb(0 83 226);
   --color-walmart-yellow: rgb(255 194 32);
-  --color-bentonville-blue: rgb(4 30 66);
-  --color-everyday-blue: rgb(0 120 206);
-  --color-sky-blue: rgb(130 206 244);
+  --color-bentonville-blue: rgb(0 30 96);
+  --color-everyday-blue: rgb(77 189 245);
+  --color-sky-blue: rgb(169 221 247);
   --color-walmart-green: rgb(29 185 84);
 }
 
@@ -72,16 +72,18 @@
 
 @layer base {
   :root {
-    /* light - Walmart Blue */
-    --immich-primary: 0 113 206;
+    /* light - TRUE BLUE #0053E2 */
+    --immich-primary: 0 83 226;
     --immich-bg: 255 255 255;
-    --immich-fg: 4 30 66;
+    /* fg - BENTONVILLE BLUE #001E60 */
+    --immich-fg: 0 30 96;
 
-    /* dark - Sky Blue & Bentonville Blue */
-    --immich-dark-primary: 130 206 244;
-    --immich-dark-bg: 4 30 66;
+    /* dark - SKY BLUE #A9DDF7 & BENTONVILLE BLUE #001E60 */
+    --immich-dark-primary: 169 221 247;
+    --immich-dark-bg: 0 30 96;
     --immich-dark-fg: 255 255 255;
-    --immich-dark-gray: 0 120 206;
+    /* EVERYDAY BLUE #4DBDF5 */
+    --immich-dark-gray: 77 189 245;
   }
 
   *,
