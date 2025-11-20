@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Logo } from '@immich/ui';
+  import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -14,7 +14,7 @@
   class="flex gap-1 mt-2 place-items-center dark:bg-walmart-blue/5 bg-walmart-blue/5 p-2 rounded-lg bg-clip-padding border border-walmart-blue/20 dark:border-walmart-blue/30 relative supporter-effect"
   class:place-content-center={centered}
 >
-  <Logo variant="icon" size={logoSize === 'sm' ? 'tiny' : 'small'} />
+  <WalmartLogo variant="icon" size={logoSize === 'sm' ? 'tiny' : 'small'} />
   <p class="dark:text-gray-100">{$t('purchase_account_info')}</p>
 </div>
 

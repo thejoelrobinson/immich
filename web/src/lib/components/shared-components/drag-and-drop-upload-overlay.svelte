@@ -5,7 +5,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
   import { isAlbumsRoute, isLockedFolderRoute } from '$lib/utils/navigation';
-  import { Logo } from '@immich/ui';
+  import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
@@ -168,7 +168,7 @@
     transition:fade={{ duration: 250 }}
     ondragover={onDragOver}
   >
-    <Logo variant="icon" size="giant" class="m-16 animate-bounce" />
+    ​<WalmartLogo variant="icon" size="giant" class="m-16 animate-bounce" />
     <div class="text-2xl">{$t('drop_files_to_upload')}</div>
   </div>
 {/if}

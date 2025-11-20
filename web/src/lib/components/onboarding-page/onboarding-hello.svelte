@@ -2,7 +2,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import { OnboardingRole } from '$lib/models/onboarding-role';
   import { user } from '$lib/stores/user.store';
-  import { Logo } from '@immich/ui';
+  import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
   import { t } from 'svelte-i18n';
 
   let userRole = $derived(
@@ -11,7 +11,7 @@
 </script>
 
 <div class="gap-4">
-  <Logo variant="icon" size="giant" class="mb-2" />
+  ​<WalmartLogo variant="icon" size="giant" class="mb-2" />
   <p class="font-medium mb-6 text-6xl text-primary">
     {$t('onboarding_welcome_user', { values: { user: $user.name } })}
   </p>

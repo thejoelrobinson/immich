@@ -16,7 +16,8 @@
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { user } from '$lib/stores/user.store';
-  import { Button, IconButton, Logo } from '@immich/ui';
+  import WalmartLogo from '$lib/components/shared-components/walmart-logo.svelte';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -77,7 +78,7 @@
         class="sidebar:hidden"
       />
       <a data-sveltekit-preload-data="hover" href={AppRoute.PHOTOS}>
-        <Logo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
+        <WalmartLogo variant={mobileDevice.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pe-6">
