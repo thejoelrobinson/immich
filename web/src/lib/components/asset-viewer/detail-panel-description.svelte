@@ -31,7 +31,7 @@
   <section class="px-4 mt-10">
     <AutogrowTextarea
       content={description}
-      class="max-h-125 w-full border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-immich-primary disabled:border-none dark:text-white dark:focus:border-immich-dark-primary immich-scrollbar"
+      class="max-h-125 w-full border-b border-gray-500 bg-transparent text-base text-black outline-none transition-all focus:border-b-2 focus:border-walmart-blue disabled:border-none dark:text-white dark:focus:border-sky-blue immich-scrollbar"
       onContentUpdate={handleFocusOut}
       placeholder={$t('add_a_description')}
     />

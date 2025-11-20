@@ -35,7 +35,7 @@
 </script>
 
 <div
-  class="flex w-full border-b border-gray-200 transition-all hover:border-immich-primary dark:border-gray-600 dark:text-immich-gray dark:hover:border-immich-dark-primary"
+  class="flex w-full border-b border-gray-200 transition-all hover:border-walmart-blue dark:border-gray-600 dark:text-gray-300 dark:hover:border-sky-blue"
 >
   <svelte:element
     this={isExpired ? 'div' : 'a'}

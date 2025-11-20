@@ -45,7 +45,7 @@
       {#each tags as tag (tag.id)}
         <div class="flex group transition-all">
           <a
-            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-primary rounded-s-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            class="inline-block h-min whitespace-nowrap ps-3 pe-1 group-hover:ps-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-bentonville-blue bg-primary rounded-s-full hover:bg-walmart-blue/80 dark:hover:bg-sky-blue/80 transition-all"
             href={resolve(`${AppRoute.TAGS}/?path=${encodeURI(tag.value)}`)}
           >
             <p class="text-sm">
@@ -55,7 +55,7 @@
 
           <button
             type="button"
-            class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
+            class="text-gray-100 dark:text-bentonville-blue bg-walmart-blue/95 dark:bg-sky-blue/95 rounded-e-full place-items-center place-content-center pe-2 ps-1 py-1 hover:bg-walmart-blue/80 dark:hover:bg-sky-blue/80 transition-all"
             title="Remove tag"
             onclick={() => handleRemove(tag.id)}
           >

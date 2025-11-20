@@ -528,7 +528,7 @@
   {#if usingMobileDevice && ((timelineManager.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
-      class="rounded-s-full w-8 ps-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
+      class="rounded-s-full w-8 ps-2 text-white bg-walmart-blue dark:bg-gray-600 hover:cursor-pointer select-none"
       style:top="{PADDING_TOP + (scrollY - 50 / 2)}px"
       style:height="50px"
       style:right="0"
@@ -544,7 +544,7 @@
           style:bottom={50 / 2 - 30 / 2 + 'px'}
           style:right="36px"
           style:width="fit-content"
-          class="truncate pointer-events-none absolute text-sm rounded-full w-8 py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
+          class="truncate pointer-events-none absolute text-sm rounded-full w-8 py-2 px-4 text-white bg-walmart-blue/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
         >
           {scrollHoverLabel}
         </p>
@@ -557,7 +557,7 @@
       {#if timelineManager.scrolling && scrollHoverLabel && !isHover}
         <p
           transition:fade={{ duration: 200 }}
-          class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:text-immich-dark-fg"
+          class="truncate pointer-events-none absolute end-0 bottom-0 min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-walmart-blue bg-subtle/90 z-1 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-sky-blue dark:text-gray-200"
         >
           {scrollHoverLabel}
         </p>
@@ -581,7 +581,7 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute end-5 text-[12px] dark:text-immich-dark-fg font-immich-mono bottom-0">
+          <div class="absolute end-5 text-[12px] dark:text-gray-200 font-immich-mono bottom-0">
             {segment.year}
           </div>
         {/if}

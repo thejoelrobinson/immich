@@ -314,7 +314,7 @@
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
+    class="absolute top-[calc(50%-250px)] start-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-bentonville-blue dark:text-gray-200 backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
   >
     <p class="text-center text-sm">{$t('select_person_to_tag')}</p>
 
@@ -329,7 +329,7 @@
             <button
               onclick={() => tagFace(person)}
               type="button"
-              class="w-full flex place-items-center gap-2 rounded-lg ps-1 pe-4 py-2 hover:bg-immich-primary/25"
+              class="w-full flex place-items-center gap-2 rounded-lg ps-1 pe-4 py-2 hover:bg-walmart-blue/25"
             >
               <ImageThumbnail
                 curve

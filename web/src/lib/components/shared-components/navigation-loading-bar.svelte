@@ -27,6 +27,6 @@
 
 {#if showing}
   <div class="absolute start-0 top-0 h-[3px] w-dvw bg-white">
-    <span class="absolute h-[3px] bg-immich-primary" style:width={`${$progress}%`}></span>
+    <span class="absolute h-[3px] bg-walmart-blue" style:width={`${$progress}%`}></span>
   </div>
 {/if}

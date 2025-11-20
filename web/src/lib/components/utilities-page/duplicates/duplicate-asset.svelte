@@ -138,12 +138,12 @@
       <!-- EXTERNAL LIBRARY / STACK COUNT CHIP -->
       <div class="absolute top-2 end-3">
         {#if isFromExternalLibrary}
-          <div class="bg-immich-primary/90 px-2 py-1 rounded-xl text-xs text-white">
+          <div class="bg-walmart-blue/90 px-2 py-1 rounded-xl text-xs text-white">
             {$t('external')}
           </div>
         {/if}
         {#if asset.stack?.assetCount}
-          <div class="bg-immich-primary/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
+          <div class="bg-walmart-blue/90 px-2 py-1 my-0.5 rounded-xl text-xs text-white">
             <div class="flex items-center justify-center">
               <div class="me-1">{asset.stack.assetCount}</div>
               <Icon icon={mdiImageMultipleOutline} size="18" />

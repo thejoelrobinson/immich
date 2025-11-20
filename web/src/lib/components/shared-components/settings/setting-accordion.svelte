@@ -86,12 +86,12 @@
       </div>
 
       {#if subtitleSnippet}{@render subtitleSnippet()}{:else}
-        <p class="text-sm dark:text-immich-dark-fg mt-1">{subtitle}</p>
+        <p class="text-sm dark:text-gray-200 mt-1">{subtitle}</p>
       {/if}
     </div>
 
     <div
-      class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-immich-primary/10 dark:text-immich-dark-fg hover:dark:bg-immich-dark-primary/20"
+      class="immich-circle-icon-button flex place-content-center place-items-center rounded-full p-3 transition-all hover:bg-walmart-blue/10 dark:text-gray-200 hover:dark:bg-sky-blue/20"
     >
       <svg
         style="tran"

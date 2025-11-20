@@ -88,7 +88,7 @@
       onmouseleave={() => (hoverButton = false)}
       onfocus={onButtonHover}
       onblur={() => (hoverButton = false)}
-      class="p-2 flex justify-between place-items-center place-content-center border border-immich-primary/20 dark:border-immich-dark-primary/10 mt-2 rounded-lg shadow-md dark:bg-immich-dark-primary/10 min-w-52 w-full"
+      class="p-2 flex justify-between place-items-center place-content-center border border-walmart-blue/20 dark:border-sky-blue/10 mt-2 rounded-lg shadow-md dark:bg-sky-blue/10 min-w-52 w-full"
     >
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
@@ -110,7 +110,7 @@
   {#if showMessage}
     <dialog
       open
-      class="hidden sidebar:block w-125 absolute bottom-19 start-64 bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
+      class="hidden sidebar:block w-125 absolute bottom-19 start-64 bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-bentonville-blue dark:text-white text-black rounded-3xl shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
@@ -131,7 +131,7 @@
           }}
           aria-label={$t('close')}
           size="medium"
-          class="text-immich-dark-gray/85 dark:text-immich-gray"
+          class="text-bentonville-blue/85 dark:text-gray-300"
         />
       </div>
 

@@ -361,7 +361,7 @@
       >
         {#snippet children({ feature })}
           <div
-            class="rounded-full w-10 h-10 bg-immich-primary text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+            class="rounded-full w-10 h-10 bg-walmart-blue text-white flex justify-center items-center font-mono font-bold shadow-lg hover:bg-sky-blue transition-all duration-200 hover:text-immich-dark-bg opacity-90"
           >
             {feature.properties?.point_count?.toLocaleString()}
           </div>
@@ -382,7 +382,7 @@
           {:else}
             <img
               src={getAssetThumbnailUrl(feature.properties?.id)}
-              class="rounded-full w-15 h-15 border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+              class="rounded-full w-15 h-15 border-2 border-walmart-blue shadow-lg hover:border-sky-blue transition-all duration-200 hover:scale-150 object-cover bg-walmart-blue"
               alt={feature.properties?.city && feature.properties.country
                 ? $t('map_marker_for_images', {
                     values: { city: feature.properties.city, country: feature.properties.country },

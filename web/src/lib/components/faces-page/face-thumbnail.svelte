@@ -37,14 +37,14 @@
     class:rounded-full={circle}
     class:rounded-lg={!circle}
     class:border-transparent={!border}
-    class:dark:border-immich-dark-primary={border}
-    class:border-immich-primary={border}
+    class:dark:border-sky-blue={border}
+    class:border-walmart-blue={border}
   >
     <ImageThumbnail {circle} url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" shadow />
   </div>
 
   <div
-    class="absolute start-0 top-0 h-full w-full bg-immich-primary/30 opacity-0"
+    class="absolute start-0 top-0 h-full w-full bg-walmart-blue/30 opacity-0"
     class:hover:opacity-100={selectable}
     class:rounded-full={circle}
     class:rounded-lg={!circle}

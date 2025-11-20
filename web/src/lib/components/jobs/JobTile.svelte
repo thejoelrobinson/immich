@@ -53,7 +53,7 @@
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
-<div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-9">
+<div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-bentonville-blue sm:flex-row sm:rounded-9">
   <div class="flex w-full flex-col">
     {#if queueStatus.isPaused}
       <JobTileStatus color="warning">{$t('paused')}</JobTileStatus>
@@ -107,7 +107,7 @@
 
       <div class="mt-2 flex w-full max-w-md flex-col sm:flex-row">
         <div
-          class="{commonClasses} rounded-t-lg bg-immich-primary text-white dark:bg-immich-dark-primary dark:text-immich-dark-gray sm:rounded-s-lg sm:rounded-e-none"
+          class="{commonClasses} rounded-t-lg bg-walmart-blue text-white dark:bg-sky-blue dark:text-bentonville-blue sm:rounded-s-lg sm:rounded-e-none"
         >
           <p>{$t('active')}</p>
           <p class="text-2xl">
@@ -116,7 +116,7 @@
         </div>
 
         <div
-          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-immich-gray sm:rounded-s-none sm:rounded-e-lg"
+          class="{commonClasses} flex-row-reverse rounded-b-lg bg-gray-200 text-immich-dark-bg dark:bg-gray-700 dark:text-gray-300 sm:rounded-s-none sm:rounded-e-lg"
         >
           <p class="text-2xl">
             {waitingCount.toLocaleString($locale)}

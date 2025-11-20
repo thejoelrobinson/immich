@@ -22,7 +22,7 @@
 
   const hoverClasses = disabled
     ? 'cursor-not-allowed'
-    : 'hover:bg-immich-primary hover:text-white dark:hover:bg-immich-dark-primary dark:hover:text-black';
+    : 'hover:bg-walmart-blue hover:text-white dark:hover:bg-sky-blue dark:hover:text-black';
 </script>
 
 <button
