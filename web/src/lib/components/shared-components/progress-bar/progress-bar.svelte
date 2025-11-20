@@ -91,5 +91,8 @@
 </script>
 
 {#if !hidden}
-  <span class="absolute start-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`}></span>
+  <span
+    class="absolute start-0 h-[3px] bg-gradient-to-r from-walmart-blue to-everyday-blue shadow-2xl transition-all duration-300 ease-out"
+    style:width={`${$progress * 100}%`}
+  ></span>
 {/if}
