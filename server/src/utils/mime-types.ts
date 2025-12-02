@@ -98,7 +98,23 @@ const sidecar: Record<string, string[]> = {
   '.xmp': ['application/xml', 'text/xml'],
 };
 
-const types = { ...image, ...video, ...sidecar };
+const document: Record<string, string[]> = {
+  '.pdf': ['application/pdf'],
+  '.txt': ['text/plain'],
+  '.epub': ['application/epub+zip'],
+  '.md': ['text/markdown', 'text/x-markdown'],
+  '.rtf': ['application/rtf', 'text/rtf'],
+  '.doc': ['application/msword'],
+  '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  '.odt': ['application/vnd.oasis.opendocument.text'],
+  '.csv': ['text/csv'],
+  '.json': ['application/json'],
+  '.xml': ['application/xml', 'text/xml'],
+  '.html': ['text/html'],
+  '.htm': ['text/html'],
+};
+
+const types = { ...image, ...video, ...sidecar, ...document };
 
 const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
 
@@ -115,14 +131,17 @@ export const mimeTypes = {
   sidecar,
   video,
   raw,
+  document,
 
-  isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
+  isAsset: (filename: string) => isType(filename, image) || isType(filename, video) || isType(filename, document),
   isImage: (filename: string) => isType(filename, image),
   isWebSupportedImage: (filename: string) => isType(filename, webSupportedImage),
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
   isRaw: (filename: string) => isType(filename, raw),
+  isDocument: (filename: string) => isType(filename, document),
+  isPdf: (filename: string) => extname(filename).toLowerCase() === '.pdf',
   lookup,
   /** return an extension (including a leading `.`) for a mime-type */
   toExtension,
@@ -132,8 +151,10 @@ export const mimeTypes = {
       return AssetType.Image;
     } else if (contentType.startsWith('video/')) {
       return AssetType.Video;
+    } else if (isType(filename, document)) {
+      return AssetType.Document;
     }
     return AssetType.Other;
   },
-  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
+  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video), ...Object.keys(document)],
 };

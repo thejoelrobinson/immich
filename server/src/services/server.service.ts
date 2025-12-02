@@ -166,6 +166,7 @@ export class ServerService extends BaseService {
       video: Object.keys(mimeTypes.video),
       image: Object.keys(mimeTypes.image),
       sidecar: Object.keys(mimeTypes.sidecar),
+      document: Object.keys(mimeTypes.document),
     };
   }
 

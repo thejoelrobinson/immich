@@ -137,6 +137,7 @@ export class ServerMediaTypesResponseDto {
   video!: string[];
   image!: string[];
   sidecar!: string[];
+  document!: string[];
 }
 
 export class ServerThemeDto extends SystemConfigThemeDto {}

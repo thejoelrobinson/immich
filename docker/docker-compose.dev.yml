@@ -16,7 +16,8 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    command: ['immich-dev']
+    # Install poppler-utils for PDF thumbnail rendering, then start the server
+    command: ['/bin/bash', '-c', 'apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev']
     image: immich-server-dev:latest
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -150,7 +151,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      # Use Docker named volume for macOS compatibility (avoid permission issues)
+      - postgres-dev-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     shm_size: 128mb
@@ -179,6 +181,7 @@ volumes:
   model-cache:
   prometheus-data:
   grafana-data:
+  postgres-dev-data:
   pnpm-store:
   server-node_modules:
   web-node_modules:

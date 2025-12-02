@@ -180,6 +180,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     isTrashed: assetResponse.isTrashed,
     isVideo: assetResponse.type == AssetTypeEnum.Video,
     isImage: assetResponse.type == AssetTypeEnum.Image,
+    isDocument: assetResponse.type == AssetTypeEnum.Document,
     stack: assetResponse.stack || null,
     duration: assetResponse.duration || null,
     projectionType: assetResponse.exifInfo?.projectionType || null,

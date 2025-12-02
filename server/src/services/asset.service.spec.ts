@@ -16,6 +16,7 @@ const stats: AssetStats = {
   [AssetType.Image]: 10,
   [AssetType.Video]: 23,
   [AssetType.Audio]: 0,
+  [AssetType.Document]: 0,
   [AssetType.Other]: 0,
 };
 

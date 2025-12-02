@@ -26,6 +26,7 @@ export type TimelineAsset = {
   isTrashed: boolean;
   isVideo: boolean;
   isImage: boolean;
+  isDocument: boolean;
   stack: AssetStackResponseDto | null;
   duration: string | null;
   projectionType: string | null;

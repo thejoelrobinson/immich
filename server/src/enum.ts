@@ -34,6 +34,7 @@ export enum AssetType {
   Image = 'IMAGE',
   Video = 'VIDEO',
   Audio = 'AUDIO',
+  Document = 'DOCUMENT',
   Other = 'OTHER',
 }
 
@@ -540,6 +541,7 @@ export enum QueueName {
   Notification = 'notifications',
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
+  DocumentExtraction = 'documentExtraction',
   Workflow = 'workflow',
 }
 
@@ -617,6 +619,10 @@ export enum JobName {
   // OCR
   OcrQueueAll = 'OcrQueueAll',
   Ocr = 'Ocr',
+
+  // Document Text Extraction
+  DocumentTextExtractionQueueAll = 'DocumentTextExtractionQueueAll',
+  DocumentTextExtraction = 'DocumentTextExtraction',
 
   // Workflow
   WorkflowRun = 'WorkflowRun',

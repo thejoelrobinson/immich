@@ -17,7 +17,7 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { AssetStatus, AssetType, CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetStatus, CronJob, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -401,7 +401,7 @@ export class LibraryService extends BaseService {
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
-      type: mimeTypes.isVideo(assetPath) ? AssetType.Video : AssetType.Image,
+      type: mimeTypes.assetType(assetPath),
       originalFileName: parse(assetPath).base,
       isExternal: true,
       livePhotoVideoId: null,

@@ -1227,6 +1227,7 @@ export type LicenseKeyDto = {
     licenseKey: string;
 };
 export type ServerMediaTypesResponseDto = {
+    document: string[];
     image: string[];
     sidecar: string[];
     video: string[];
@@ -5097,6 +5098,7 @@ export enum AssetTypeEnum {
     Image = "IMAGE",
     Video = "VIDEO",
     Audio = "AUDIO",
+    Document = "DOCUMENT",
     Other = "OTHER"
 }
 export enum BulkIdErrorReason {

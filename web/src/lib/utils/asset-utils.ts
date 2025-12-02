@@ -375,6 +375,9 @@ export const getAssetType = (type: AssetTypeEnum) => {
     case 'VIDEO': {
       return 'Video';
     }
+    case 'DOCUMENT': {
+      return 'Document';
+    }
     default: {
       return 'Asset';
     }

@@ -863,6 +863,8 @@
   "display_original_photos": "Display original photos",
   "display_original_photos_setting_description": "Prefer to display the original photo when viewing an asset rather than thumbnails when the original asset is web-compatible. This may result in slower photo display speeds.",
   "do_not_show_again": "Do not show this message again",
+  "document": "Document",
+  "document_preview_not_available": "Preview not available for this document type",
   "documentation": "Documentation",
   "done": "Done",
   "download": "Download",

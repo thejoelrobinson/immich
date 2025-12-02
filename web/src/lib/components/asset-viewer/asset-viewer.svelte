@@ -42,6 +42,7 @@
   import ActivityStatus from './activity-status.svelte';
   import ActivityViewer from './activity-viewer.svelte';
   import DetailPanel from './detail-panel.svelte';
+  import DocumentViewer from './document-viewer.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
@@ -527,6 +528,12 @@
               haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
+        {:else if asset.type === AssetTypeEnum.Document}
+          <DocumentViewer
+            {asset}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+          />
         {:else}
           <VideoViewer
             assetId={asset.id}

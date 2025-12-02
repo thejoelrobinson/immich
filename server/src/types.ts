@@ -395,6 +395,10 @@ export type JobItem =
   | { name: JobName.OcrQueueAll; data: IBaseJob }
   | { name: JobName.Ocr; data: IEntityJob }
 
+  // Document Text Extraction
+  | { name: JobName.DocumentTextExtractionQueueAll; data: IBaseJob }
+  | { name: JobName.DocumentTextExtraction; data: IEntityJob }
+
   // Workflow
   | { name: JobName.WorkflowRun; data: IWorkflowJob };
 

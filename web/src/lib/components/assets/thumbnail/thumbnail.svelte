@@ -9,6 +9,7 @@
     mdiArchiveArrowDownOutline,
     mdiCameraBurst,
     mdiCheckCircle,
+    mdiFileDocumentOutline,
     mdiFileGifBox,
     mdiHeart,
     mdiMotionPauseOutline,
@@ -83,7 +84,12 @@
   let thumbError = $state(false);
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
-  let height = $derived(thumbnailSize || thumbnailHeight || 235);
+  // For documents, calculate height from ratio to preserve aspect ratio without cropping
+  let height = $derived(
+    asset.isDocument && asset.ratio
+      ? Math.round(width / asset.ratio)
+      : (thumbnailSize || thumbnailHeight || 235)
+  );
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -304,6 +310,15 @@
             </span>
           </div>
         {/if}
+
+        <!-- Document indicator -->
+        {#if asset.isDocument}
+          <div class="absolute end-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+            <span class="pe-2 pt-2">
+              <Icon icon={mdiFileDocumentOutline} size="24" />
+            </span>
+          </div>
+        {/if}
       </div>
 
       <!-- lazy show the url on mouse over-->
@@ -320,13 +335,14 @@
       {/if}
 
       <ImageThumbnail
-        class={imageClass}
+        class={[imageClass, asset.isDocument && 'bg-gray-800']}
         {brokenAssetClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
+        contain={asset.isDocument}
         onComplete={(errored) => ((loaded = true), (thumbError = errored))}
       />
       {#if asset.isVideo}

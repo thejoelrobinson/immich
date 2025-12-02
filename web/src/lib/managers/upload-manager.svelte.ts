@@ -3,7 +3,7 @@ import { uploadAssetsStore } from '$lib/stores/upload';
 import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immich/sdk';
 
 class UploadManager {
-  mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [] });
+  mediaTypes = $state<ServerMediaTypesResponseDto>({ image: [], sidecar: [], video: [], document: [] });
 
   constructor() {
     eventManager.on('AppInit', () => void this.#loadExtensions()).on('AuthLogout', () => void this.reset());
@@ -22,7 +22,7 @@ class UploadManager {
   }
 
   getExtensions() {
-    return [...this.mediaTypes.image, ...this.mediaTypes.video];
+    return [...this.mediaTypes.image, ...this.mediaTypes.video, ...this.mediaTypes.document];
   }
 }
 

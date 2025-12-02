@@ -21,6 +21,7 @@
     class?: ClassValue;
     brokenAssetClass?: ClassValue;
     preload?: boolean;
+    contain?: boolean;
     onComplete?: ((errored: boolean) => void) | undefined;
   }
 
@@ -40,6 +41,7 @@
     class: imageClass = '',
     brokenAssetClass = '',
     preload = true,
+    contain = false,
   }: Props = $props();
 
   let loaded = $state(false);
@@ -69,7 +71,8 @@
       curve && 'rounded-xl',
       circle && 'rounded-full',
       shadow && 'shadow-lg',
-      (circle || !heightStyle) && 'aspect-square',
+      // Don't force aspect-square when contain mode is used (e.g., for documents)
+      !contain && (circle || !heightStyle) && 'aspect-square',
       border && 'border-3 border-sky-blue/80 hover:border-walmart-blue',
       brokenAssetClass,
     ]
@@ -92,7 +95,7 @@
     src={url}
     alt={loaded || errored ? altText : ''}
     {title}
-    class={['object-cover', optionalClasses, imageClass]}
+    class={[contain ? 'object-contain' : 'object-cover', optionalClasses, imageClass]}
     draggable="false"
     loading={preload ? 'eager' : 'lazy'}
   />

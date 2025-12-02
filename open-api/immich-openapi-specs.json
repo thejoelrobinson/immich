@@ -15583,6 +15583,7 @@
           "IMAGE",
           "VIDEO",
           "AUDIO",
+          "DOCUMENT",
           "OTHER"
         ],
         "type": "string"
@@ -18101,6 +18102,7 @@
           "notifications",
           "backupDatabase",
           "ocr",
+          "documentExtraction",
           "workflow"
         ],
         "type": "string"
@@ -18174,6 +18176,9 @@
           "backupDatabase": {
             "$ref": "#/components/schemas/QueueResponseDto"
           },
+          "documentExtraction": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseDto"
           },
@@ -18223,6 +18228,7 @@
         "required": [
           "backgroundTask",
           "backupDatabase",
+          "documentExtraction",
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
@@ -18818,6 +18824,12 @@
       },
       "ServerMediaTypesResponseDto": {
         "properties": {
+          "document": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "image": {
             "items": {
               "type": "string"
@@ -18838,6 +18850,7 @@
           }
         },
         "required": [
+          "document",
           "image",
           "sidecar",
           "video"
@@ -21074,6 +21087,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "documentExtraction": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "faceDetection": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -21113,6 +21129,7 @@
         },
         "required": [
           "backgroundTask",
+          "documentExtraction",
           "faceDetection",
           "library",
           "metadataExtraction",

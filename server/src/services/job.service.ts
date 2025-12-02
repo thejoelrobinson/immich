@@ -117,6 +117,10 @@ export class JobService extends BaseService {
           jobs.push({ name: JobName.AssetEncodeVideo, data: item.data });
         }
 
+        if (asset.type === AssetType.Document) {
+          jobs.push({ name: JobName.DocumentTextExtraction, data: item.data });
+        }
+
         await this.jobRepository.queueAll(jobs);
         if (asset.visibility === AssetVisibility.Timeline || asset.visibility === AssetVisibility.Archive) {
           this.websocketRepository.clientSend('on_upload_success', asset.ownerId, mapAsset(asset));

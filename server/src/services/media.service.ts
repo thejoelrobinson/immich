@@ -172,13 +172,17 @@ export class MediaService extends BaseService {
       thumbnailPath: string;
       fullsizePath?: string;
       thumbhash: Buffer;
+      exifImageWidth?: number;
+      exifImageHeight?: number;
     };
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
       generated = await this.generateVideoThumbnails(asset);
     } else if (asset.type === AssetType.Image) {
       generated = await this.generateImageThumbnails(asset);
+    } else if (asset.type === AssetType.Document) {
+      generated = await this.generateDocumentThumbnails(asset);
     } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
+      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image, video, or document`);
       return JobStatus.Skipped;
     }
 
@@ -226,6 +230,15 @@ export class MediaService extends BaseService {
 
     if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
       await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
+    }
+
+    // Update EXIF dimensions for documents (PDFs) so the frontend can display thumbnails with correct aspect ratio
+    if (generated.exifImageWidth && generated.exifImageHeight) {
+      await this.assetRepository.upsertExif({
+        assetId: asset.id,
+        exifImageWidth: generated.exifImageWidth,
+        exifImageHeight: generated.exifImageHeight,
+      });
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, previewAt: new Date(), thumbnailAt: new Date() });
@@ -453,6 +466,178 @@ export class MediaService extends BaseService {
     });
 
     return { previewPath, thumbnailPath, thumbhash };
+  }
+
+  private async generateDocumentThumbnails(asset: ThumbnailPathEntity & { originalPath: string }) {
+    const { image } = await this.getConfig({ withCache: true });
+    const previewPath = StorageCore.getImagePath(asset, AssetPathType.Preview, image.preview.format);
+    const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.Thumbnail, image.thumbnail.format);
+    this.storageCore.ensureFolders(previewPath);
+
+    // For PDFs, try to render the first page using sharp if available
+    // Otherwise, generate a placeholder thumbnail
+    const isPdf = mimeTypes.isPdf(asset.originalPath);
+
+    if (isPdf) {
+      try {
+        // Try to render PDF first page using pdftoppm (poppler-utils)
+        const generated = await this.generatePdfThumbnails(asset, previewPath, thumbnailPath, image);
+        if (generated) {
+          return generated;
+        }
+      } catch (error) {
+        this.logger.debug(`Failed to render PDF thumbnail, falling back to placeholder: ${error}`);
+      }
+    }
+
+    // Generate a placeholder thumbnail for documents
+    // Create a simple gray placeholder image (square placeholder, no dimensions stored)
+    const placeholderBuffer = await this.generateDocumentPlaceholder(image.preview.size, image.preview.size);
+
+    await this.mediaRepository.generateThumbnail(placeholderBuffer, { ...image.preview, colorspace: Colorspace.Srgb, processInvalidImages: false }, previewPath);
+    await this.mediaRepository.generateThumbnail(placeholderBuffer, { ...image.thumbnail, colorspace: Colorspace.Srgb, processInvalidImages: false }, thumbnailPath);
+
+    const thumbhash = await this.mediaRepository.generateThumbhash(placeholderBuffer, {
+      colorspace: Colorspace.Srgb,
+      processInvalidImages: false,
+    });
+
+    // Placeholder thumbnails are square, don't set dimensions so frontend uses default aspect ratio
+    return { previewPath, thumbnailPath, thumbhash };
+  }
+
+  private async generatePdfThumbnails(
+    asset: ThumbnailPathEntity & { originalPath: string },
+    previewPath: string,
+    thumbnailPath: string,
+    imageConfig: { preview: { size: number; format: ImageFormat; quality: number }; thumbnail: { size: number; format: ImageFormat; quality: number } },
+  ): Promise<{ previewPath: string; thumbnailPath: string; thumbhash: Buffer; exifImageWidth: number; exifImageHeight: number } | null> {
+    // Use pdftoppm (poppler-utils) to render the first page of the PDF
+    const { execFile } = await import('child_process');
+    const { promisify } = await import('util');
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const execFileAsync = promisify(execFile);
+
+    // Create a temp file for the rendered PDF page
+    const tempDir = path.dirname(previewPath);
+    const tempBasename = `pdf-render-${asset.id}`;
+    const tempPath = path.join(tempDir, tempBasename);
+
+    try {
+      // Render first page of PDF to PNG using pdftoppm
+      // -f 1 -l 1: first page only
+      // -png: output PNG format
+      // -r 150: 150 DPI resolution (good balance of quality and size)
+      // -singlefile: don't add page number suffix
+      await execFileAsync('/usr/bin/pdftoppm', [
+        '-f', '1',
+        '-l', '1',
+        '-png',
+        '-r', '150',
+        '-singlefile',
+        asset.originalPath,
+        tempPath,
+      ]);
+
+      // pdftoppm creates file with .png extension
+      const renderedPath = `${tempPath}.png`;
+
+      // Check if the rendered file exists
+      await fs.access(renderedPath);
+
+      // Read the rendered image and get its dimensions
+      const pdfImageBuffer = await fs.readFile(renderedPath);
+      const sharp = (await import('sharp')).default;
+      const metadata = await sharp(pdfImageBuffer).metadata();
+      const originalWidth = metadata.width || 1;
+      const originalHeight = metadata.height || 1;
+
+      // Calculate aspect ratio and cap at 9:16 (portrait) or 16:9 (landscape)
+      const aspectRatio = originalWidth / originalHeight;
+      const maxAspectRatio = 16 / 9; // ~1.78
+      const minAspectRatio = 9 / 16; // ~0.56
+
+      let targetWidth: number;
+      let targetHeight: number;
+
+      if (aspectRatio > maxAspectRatio) {
+        // Too wide, cap at 16:9
+        targetWidth = imageConfig.preview.size;
+        targetHeight = Math.round(targetWidth / maxAspectRatio);
+      } else if (aspectRatio < minAspectRatio) {
+        // Too tall, cap at 9:16
+        targetHeight = imageConfig.preview.size;
+        targetWidth = Math.round(targetHeight * minAspectRatio);
+      } else {
+        // Within acceptable range, preserve original aspect ratio
+        if (originalWidth > originalHeight) {
+          targetWidth = imageConfig.preview.size;
+          targetHeight = Math.round(targetWidth / aspectRatio);
+        } else {
+          targetHeight = imageConfig.preview.size;
+          targetWidth = Math.round(targetHeight * aspectRatio);
+        }
+      }
+
+      // Generate preview with preserved aspect ratio (fit: 'inside')
+      await sharp(pdfImageBuffer)
+        .resize(targetWidth, targetHeight, { fit: 'inside', withoutEnlargement: true })
+        .toFormat(imageConfig.preview.format, { quality: imageConfig.preview.quality })
+        .toFile(previewPath);
+
+      // Generate thumbnail with preserved aspect ratio
+      const thumbTargetWidth = Math.round(targetWidth * (imageConfig.thumbnail.size / imageConfig.preview.size));
+      const thumbTargetHeight = Math.round(targetHeight * (imageConfig.thumbnail.size / imageConfig.preview.size));
+      await sharp(pdfImageBuffer)
+        .resize(thumbTargetWidth, thumbTargetHeight, { fit: 'inside', withoutEnlargement: true })
+        .toFormat(imageConfig.thumbnail.format, { quality: imageConfig.thumbnail.quality })
+        .toFile(thumbnailPath);
+
+      // Generate thumbhash from the preview
+      const thumbhash = await this.mediaRepository.generateThumbhash(pdfImageBuffer, {
+        colorspace: Colorspace.Srgb,
+        processInvalidImages: false,
+      });
+
+      // Clean up temp file
+      await fs.unlink(renderedPath).catch(() => {});
+
+      return { previewPath, thumbnailPath, thumbhash, exifImageWidth: originalWidth, exifImageHeight: originalHeight };
+    } catch (error) {
+      this.logger.debug(`Failed to render PDF with pdftoppm: ${error}`);
+      // Clean up any temp files on error
+      const renderedPath = `${tempPath}.png`;
+      await fs.unlink(renderedPath).catch(() => {});
+      return null;
+    }
+  }
+
+  private async generateDocumentPlaceholder(width: number, height: number): Promise<Buffer> {
+    // Create a simple placeholder image using sharp
+    // This creates a light gray image with a document icon pattern
+    const sharp = await import('sharp').then((m) => m.default || m);
+
+    // Create a simple gray placeholder
+    const placeholderSvg = `
+      <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+        <rect width="100%" height="100%" fill="#e5e7eb"/>
+        <g transform="translate(${width / 2 - 40}, ${height / 2 - 50})">
+          <rect x="10" y="0" width="60" height="80" rx="4" fill="#9ca3af" stroke="#6b7280" stroke-width="2"/>
+          <rect x="20" y="15" width="40" height="4" fill="#6b7280"/>
+          <rect x="20" y="25" width="40" height="4" fill="#6b7280"/>
+          <rect x="20" y="35" width="30" height="4" fill="#6b7280"/>
+          <rect x="20" y="45" width="35" height="4" fill="#6b7280"/>
+          <rect x="20" y="55" width="25" height="4" fill="#6b7280"/>
+        </g>
+        <text x="${width / 2}" y="${height / 2 + 60}" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#6b7280">Document</text>
+      </svg>
+    `;
+
+    return sharp(Buffer.from(placeholderSvg))
+      .resize(width, height, { fit: 'inside' })
+      .png()
+      .toBuffer();
   }
 
   @OnJob({ name: JobName.AssetEncodeVideoQueueAll, queue: QueueName.VideoConversion })

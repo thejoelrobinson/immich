@@ -10,6 +10,7 @@ import { AuthService } from 'src/services/auth.service';
 import { BackupService } from 'src/services/backup.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
+import { DocumentService } from 'src/services/document.service';
 import { DownloadService } from 'src/services/download.service';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { JobService } from 'src/services/job.service';
@@ -60,6 +61,7 @@ export const services = [
   BackupService,
   CliService,
   DatabaseService,
+  DocumentService,
   DownloadService,
   DuplicateService,
   JobService,
