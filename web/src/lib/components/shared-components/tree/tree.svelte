@@ -89,6 +89,7 @@
   role="treeitem"
   aria-selected={false}
   tabindex="0"
+  class="outline-none"
   onkeydown={(event) => handleKeydown(event, node)}
   onclick={(event) => handleSelect(event, node.path)}
 >
@@ -115,3 +116,10 @@
     <TreeItems tree={node} {icons} {active} {getLink} isNested />
   {/if}
 </li>
+
+<style>
+  li[role='treeitem']:focus > div {
+    outline-style: var(--tw-outline-style);
+    outline-width: 2px;
+  }
+</style>
