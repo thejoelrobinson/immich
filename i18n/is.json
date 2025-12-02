@@ -1,1 +1,19 @@
-{}
+{
+  "about": "Um",
+  "account_settings": "Notenda stillingar",
+  "acknowledge": "Staðfesta",
+  "action": "Aðgerð",
+  "action_common_update": "Uppfæra",
+  "actions": "Aðgerðir",
+  "active": "Virkt",
+  "activity": "Virkni",
+  "add": "Bæta við",
+  "add_a_description": "Bæta við lýsingu",
+  "add_a_location": "Setja inn staðsetningu",
+  "add_a_name": "Bæta við nafni",
+  "add_a_title": "Bæta við titli",
+  "add_birthday": "Bæta við afmælisdegi",
+  "add_to_album": "Bæta í albúm",
+  "add_to_album_bottom_sheet_added": "Bætt við {album}",
+  "add_to_album_bottom_sheet_already_exists": "Þegar í {album}"
+}
