@@ -105,5 +105,5 @@
 </li>
 
 {#if isOpen}
-  <TreeItems tree={node} {icons} {active} {getLink} />
+  <TreeItems tree={node} {icons} {active} {getLink} isNested />
 {/if}
