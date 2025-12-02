@@ -42,7 +42,9 @@
         event.stopPropagation();
         const hasChildren = node.children.length > 0;
         if (isOpen && hasChildren) {
-          console.log('focus first child');
+          const target = event.target as HTMLElement;
+          const child = target.querySelector<HTMLLIElement>('ul[role="group"] > li[role="treeitem"]');
+          child?.focus();
         } else if (!isOpen && hasChildren) {
           isOpen = true;
         }
@@ -56,7 +58,9 @@
         if (isOpen && hasChildren) {
           isOpen = false;
         } else if (node.parents.length > 0) {
-          console.log('focus parent');
+          const target = event.target as HTMLElement;
+          const parent = target.parentElement?.closest<HTMLLIElement>('li[role="treeitem"]');
+          parent?.focus();
         }
 
         break;
