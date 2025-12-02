@@ -78,9 +78,9 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SheetTile(
-            title: 'exif_bottom_sheet_location'.t(context: context),
-            titleStyle: context.textTheme.labelMedium?.copyWith(
-              color: context.textTheme.labelMedium?.color?.withAlpha(200),
+            title: 'location'.t(context: context).toUpperCase(),
+            titleStyle: context.textTheme.labelLarge?.copyWith(
+              color: context.textTheme.labelLarge?.color?.withAlpha(200),
               fontWeight: FontWeight.w600,
             ),
             trailing: hasCoordinates ? const Icon(Icons.edit_location_alt, size: 20) : null,
@@ -97,12 +97,12 @@ class _SheetLocationDetailsState extends ConsumerState<SheetLocationDetails> {
                   if (locationName != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4.0),
-                      child: Text(locationName, style: context.textTheme.labelLarge),
+                      child: Text(locationName, style: context.textTheme.titleSmall),
                     ),
                   Text(
                     coordinates,
-                    style: context.textTheme.labelMedium?.copyWith(
-                      color: context.textTheme.labelMedium?.color?.withAlpha(150),
+                    style: context.textTheme.labelLarge?.copyWith(
+                      color: context.textTheme.labelLarge?.color?.withAlpha(200),
                     ),
                   ),
                 ],

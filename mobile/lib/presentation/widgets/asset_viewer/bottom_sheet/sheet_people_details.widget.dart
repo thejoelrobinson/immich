@@ -54,8 +54,8 @@ class _SheetPeopleDetailsState extends ConsumerState<SheetPeopleDetails> {
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
                   "people".t(context: context).toUpperCase(),
-                  style: context.textTheme.labelMedium?.copyWith(
-                    color: context.textTheme.labelMedium?.color?.withAlpha(200),
+                  style: context.textTheme.labelLarge?.copyWith(
+                    color: context.textTheme.labelLarge?.color?.withAlpha(200),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
