@@ -23,12 +23,17 @@
     isOpen = !isOpen;
   };
 
+  const handleSelect = (event: MouseEvent | KeyboardEvent, path: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    navigateTo(path);
+  };
+
   const handleKeydown = (event: KeyboardEvent, node: TreeNode) => {
     switch (event.key) {
       case 'Enter':
       case ' ': {
-        event.preventDefault();
-        navigateTo(node.path);
+        handleSelect(event, node.path);
 
         break;
       }
@@ -84,26 +89,29 @@
   role="treeitem"
   aria-selected={false}
   tabindex="0"
-  class={`flex grow place-items-center ps-2 py-1 text-sm rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-primary' : 'dark:text-gray-200'}`}
   onkeydown={(event) => handleKeydown(event, node)}
-  onclick={() => navigateTo(node.path)}
+  onclick={(event) => handleSelect(event, node.path)}
 >
-  {#if node.size > 0}
-    <button tabindex={-1} aria-hidden="true" type="button" {onclick}>
-      <Icon icon={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size="20" />
-    </button>
-  {/if}
-  <div class={node.size === 0 ? 'ml-[1.5em] ' : ''}>
-    <Icon
-      icon={isActive ? icons.active : icons.default}
-      class={isActive ? 'text-primary' : 'text-gray-400'}
-      color={node.color}
-      size="20"
-    />
+  <div
+    class={`flex grow place-items-center ps-2 py-1 text-sm rounded-lg cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 hover:font-semibold ${isTarget ? 'bg-slate-100 dark:bg-slate-700 font-semibold text-primary' : 'dark:text-gray-200'}`}
+  >
+    {#if node.size > 0}
+      <button tabindex={-1} aria-hidden="true" type="button" {onclick}>
+        <Icon icon={isOpen ? mdiChevronDown : mdiChevronRight} class="text-gray-400" size="20" />
+      </button>
+    {/if}
+    <div class={node.size === 0 ? 'ml-[1.5em] ' : ''}>
+      <Icon
+        icon={isActive ? icons.active : icons.default}
+        class={isActive ? 'text-primary' : 'text-gray-400'}
+        color={node.color}
+        size="20"
+      />
+    </div>
+    <span class="text-nowrap overflow-hidden text-ellipsis font-mono ps-1 pt-1 whitespace-pre-wrap">{node.value}</span>
   </div>
-  <span class="text-nowrap overflow-hidden text-ellipsis font-mono ps-1 pt-1 whitespace-pre-wrap">{node.value}</span>
-</li>
 
-{#if isOpen}
-  <TreeItems tree={node} {icons} {active} {getLink} isNested />
-{/if}
+  {#if isOpen}
+    <TreeItems tree={node} {icons} {active} {getLink} isNested />
+  {/if}
+</li>
