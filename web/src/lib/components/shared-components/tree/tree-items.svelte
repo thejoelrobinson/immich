@@ -14,8 +14,6 @@
 
 <ul class="list-none ms-2">
   {#each tree.children as node (node.color ? node.path + node.color : node.path)}
-    <li>
-      <Tree {node} {icons} {active} {getLink} />
-    </li>
+    <Tree {node} {icons} {active} {getLink} />
   {/each}
 </ul>
