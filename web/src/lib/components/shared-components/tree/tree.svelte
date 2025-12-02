@@ -122,7 +122,7 @@
 </li>
 
 <style>
-  li[role='treeitem']:focus > div {
+  li[role='treeitem']:focus-visible > div {
     outline-style: var(--tw-outline-style);
     outline-width: 2px;
   }
