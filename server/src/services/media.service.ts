@@ -695,8 +695,8 @@ export class MediaService extends BaseService {
       // the jellyfin-ffmpeg bundled one, which lacks graphite2 support required by LibreOffice
       // The path differs by architecture: aarch64 vs x86_64
       const harfbuzzPath = process.arch === 'arm64'
-        ? '/lib/aarch64-linux-gnu/libharfbuzz.so.0'
-        : '/lib/x86_64-linux-gnu/libharfbuzz.so.0';
+        ? '/usr/lib/aarch64-linux-gnu/libharfbuzz.so'
+        : '/usr/lib/x86_64-linux-gnu/libharfbuzz.so';
 
       // Create unique user profile to allow concurrent LibreOffice instances
       const userProfileDir = path.join(tempDir, `lo-profile-${asset.id}`);

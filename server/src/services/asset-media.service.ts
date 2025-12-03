@@ -302,8 +302,8 @@ export class AssetMediaService extends BaseService {
     try {
       // Convert Office document to PDF using LibreOffice
       const harfbuzzPath = process.arch === 'arm64'
-        ? '/lib/aarch64-linux-gnu/libharfbuzz.so.0'
-        : '/lib/x86_64-linux-gnu/libharfbuzz.so.0';
+        ? '/usr/lib/aarch64-linux-gnu/libharfbuzz.so'
+        : '/usr/lib/x86_64-linux-gnu/libharfbuzz.so';
 
       // Create unique user profile to allow concurrent LibreOffice instances
       const userProfileDir = path.join(tempDir, `lo-profile-${asset.id}`);

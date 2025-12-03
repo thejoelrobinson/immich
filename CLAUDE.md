@@ -162,43 +162,87 @@ BullMQ handles background jobs: thumbnail generation, video transcoding, facial 
 This fork adds document file support beyond images and videos.
 
 ### Supported Formats
-| Format | Text Extraction | Thumbnail |
-|--------|-----------------|-----------|
-| PDF | Yes (pdf-parse) | First page render (pdftoppm) |
-| TXT, MD, CSV, JSON, XML, HTML | Yes | Placeholder icon |
-| EPUB | Yes (epub2) | Placeholder icon |
-| RTF | Yes (basic) | Placeholder icon |
+| Format | Text Extraction | Thumbnail | Viewer |
+|--------|-----------------|-----------|--------|
+| PDF | Yes (pdf-parse) | First page render (pdftoppm) | Native browser iframe |
+| DOCX, DOC, ODT | Yes (mammoth/officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
+| XLSX, XLS | Yes (officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
+| PPTX, PPT | Yes (officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
+| TXT, MD, CSV, JSON, XML, HTML | Yes | Placeholder icon | Native browser iframe |
+| EPUB | Yes (epub2) | Placeholder icon | Download only |
+| RTF | Yes (basic) | Placeholder icon | Native browser iframe |
 
 ### Key Components
 - **`server/src/services/document.service.ts`** - Text extraction from documents
-- **`server/src/services/media.service.ts`** - PDF thumbnail generation via pdftoppm
-- **`web/src/lib/components/asset-viewer/document-viewer.svelte`** - PDF/text viewer
+- **`server/src/services/media.service.ts`** - Thumbnail generation (PDF via pdftoppm, Office via LibreOffice)
+- **`server/src/services/asset-media.service.ts`** - `documentPdf()` method for Office-to-PDF conversion
+- **`server/src/controllers/asset-media.controller.ts`** - `GET /assets/:id/document/pdf` endpoint
+- **`web/src/lib/components/asset-viewer/document-viewer.svelte`** - Multi-format document viewer
+- **`web/src/lib/utils.ts`** - `getDocumentPdfUrl()` helper
 - **`server/src/utils/mime-types.ts`** - Document MIME type detection (`isDocument()`, `isPdf()`)
+
+### Document Viewer Architecture
+
+The document viewer (`document-viewer.svelte`) uses server-side PDF conversion for all Office formats, providing 100% fidelity to the original document formatting:
+
+```
+PDF              → Native browser iframe (documentUrl)
+Office docs      → Server-side LibreOffice PDF conversion (pdfUrl endpoint)
+(DOCX, DOC, ODT, XLSX, XLS, PPTX, PPT)
+Text files       → Native browser iframe (documentUrl)
+```
 
 ### How It Works
 1. Upload triggers `AssetType.Document` classification via `mimeTypes.assetType()`
-2. Thumbnail generation creates PDF first-page render or placeholder icon
+2. Thumbnail generation creates PDF first-page render (pdftoppm) or LibreOffice render for Office docs
 3. `DocumentTextExtraction` job extracts searchable text
 4. Text stored in `ocr_search` table (reuses OCR infrastructure)
 5. Documents appear in timeline with document icon overlay
-6. Document viewer uses iframe for PDF rendering, direct display for text files
+6. Document viewer detects file type by extension and uses appropriate renderer:
+   - All Office formats: Server-side LibreOffice PDF conversion (high fidelity)
+   - PDF/Text: Native browser rendering
+
+### Document PDF Endpoint
+
+For all Office documents, the server provides a PDF conversion endpoint:
+
+```
+GET /assets/:id/document/pdf
+```
+
+This endpoint:
+1. Returns the original file if it's already a PDF
+2. Converts Office documents to PDF using LibreOffice headless mode
+3. Creates unique temp directory per conversion to support concurrency
+4. Returns the PDF with appropriate caching headers
 
 ### Document Thumbnail Aspect Ratio
 PDF thumbnails preserve the original page aspect ratio (capped 9:16 to 16:9). The frontend calculates container height from `asset.ratio` for documents to prevent cropping.
 
 ### Dependencies Added
+
+**Server (npm):**
 - `pdf-parse` - PDF text extraction
 - `epub2` - EPUB parsing
-- `poppler-utils` - PDF thumbnail rendering (installed in Docker via apt)
+- `mammoth` - DOCX text extraction
+- `officeparser` - Office document text extraction (DOC, PPT, XLS, etc.)
+
+**Server (apt - installed in Docker):**
+- `poppler-utils` - PDF thumbnail rendering (pdftoppm)
+- `libreoffice` - Office document thumbnail generation and PDF conversion for viewing
 
 ## Key Files
 
 - `server/src/services/media.service.ts` - Media processing (thumbnails, transcoding)
 - `server/src/services/asset.service.ts` - Asset management
+- `server/src/services/asset-media.service.ts` - Asset media operations including `documentPdf()` (fork)
 - `server/src/services/library.service.ts` - Library scanning
 - `server/src/services/document.service.ts` - Document text extraction (fork)
+- `server/src/controllers/asset-media.controller.ts` - Asset media endpoints including `/document/pdf` (fork)
 - `web/src/lib/components/asset-viewer/` - Asset viewing components
-- `web/src/lib/components/asset-viewer/document-viewer.svelte` - Document viewer (fork)
+- `web/src/lib/components/asset-viewer/asset-viewer.svelte` - Main asset viewer with document type detection
+- `web/src/lib/components/asset-viewer/document-viewer.svelte` - Multi-format document viewer (fork)
+- `web/src/lib/utils.ts` - Utility functions including `getDocumentPdfUrl()` (fork)
 - `web/src/lib/components/assets/thumbnail/` - Thumbnail components
 - `web/src/lib/managers/timeline-manager/` - Timeline/gallery logic
 - `docs/DOCUMENT-SUPPORT.md` - Full document support documentation (fork)
