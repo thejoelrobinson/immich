@@ -13,20 +13,24 @@ Document support extends Immich to handle files beyond images and videos. Docume
 
 ## Supported Formats
 
-| Extension | MIME Type | Text Extraction | Notes |
-|-----------|-----------|-----------------|-------|
-| .pdf | application/pdf | Yes | Full text extraction via pdf-parse |
-| .txt | text/plain | Yes | Direct file reading |
-| .md | text/markdown | Yes | Direct file reading |
-| .epub | application/epub+zip | Yes | E-book parsing via epub2 |
-| .rtf | application/rtf | Yes | Basic RTF stripping |
-| .csv | text/csv | Yes | Direct file reading |
-| .json | application/json | Yes | Direct file reading |
-| .xml | application/xml | Yes | Direct file reading |
-| .html/.htm | text/html | Yes | Direct file reading |
-| .doc | application/msword | No | Placeholder - needs mammoth.js |
-| .docx | application/vnd.openxmlformats-officedocument.wordprocessingml.document | No | Placeholder - needs mammoth.js |
-| .odt | application/vnd.oasis.opendocument.text | No | Placeholder - needs additional library |
+| Extension | MIME Type | Text Extraction | Thumbnail | Viewer | Notes |
+|-----------|-----------|-----------------|-----------|--------|-------|
+| .pdf | application/pdf | Yes | First page render | Native browser | Via pdf-parse, pdftoppm |
+| .txt | text/plain | Yes | Placeholder | Iframe | Direct file reading |
+| .md | text/markdown | Yes | Placeholder | Iframe | Direct file reading |
+| .epub | application/epub+zip | Yes | Placeholder | Download | Via epub2 |
+| .rtf | application/rtf | Yes | Placeholder | Iframe | Basic RTF stripping |
+| .csv | text/csv | Yes | Placeholder | Iframe | Direct file reading |
+| .json | application/json | Yes | Placeholder | Iframe | Direct file reading |
+| .xml | application/xml | Yes | Placeholder | Iframe | Direct file reading |
+| .html/.htm | text/html | Yes | Placeholder | Iframe | Direct file reading |
+| .docx | application/vnd.openxmlformats... | Yes | First page render | HTML render | Via mammoth, LibreOffice |
+| .doc | application/msword | Yes | First page render | Download | Via officeparser, LibreOffice |
+| .pptx | application/vnd.openxmlformats... | Yes | First page render | Download | Via officeparser, LibreOffice |
+| .ppt | application/vnd.ms-powerpoint | Yes | First page render | Download | Via officeparser, LibreOffice |
+| .xlsx | application/vnd.openxmlformats... | Yes | First page render | Download | Via officeparser, LibreOffice |
+| .xls | application/vnd.ms-excel | Yes | First page render | Download | Via officeparser, LibreOffice |
+| .odt | application/vnd.oasis.opendoc... | Yes | First page render | Download | Via officeparser, LibreOffice |
 
 ## Architecture
 
@@ -106,6 +110,8 @@ Updated `toTimelineAsset()` to set `isDocument` property.
 Added to `server/package.json`:
 - `pdf-parse`: ^1.1.1 - PDF text extraction
 - `epub2`: ^3.0.2 - EPUB e-book parsing
+- `mammoth`: ^1.8.0 - DOCX (Word) text extraction
+- `officeparser`: ^4.0.5 - Legacy Office formats (.doc, .ppt, .pptx, .xls, .xlsx, .odt)
 
 ## Configuration
 
@@ -153,8 +159,6 @@ Response now includes `document` array:
 
 ## Future Enhancements
 
-1. **Word Document Support**: Add `mammoth` library for .doc/.docx extraction
-2. **ODT Support**: Add library for OpenDocument format
-3. **PDF Thumbnail Generation**: Render first page of PDF as thumbnail using poppler or ImageMagick
-4. **Document Viewer**: Add in-app document viewer/reader
-5. **Document Metadata**: Extract document metadata (author, title, creation date)
+1. **Document Metadata**: Extract document metadata (author, title, creation date)
+2. **EPUB Viewer**: Add dedicated EPUB reader component
+3. **PowerPoint/Excel Viewer**: Add in-app viewers for presentations and spreadsheets

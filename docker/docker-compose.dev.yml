@@ -16,8 +16,8 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    # Install poppler-utils for PDF thumbnail rendering, then start the server
-    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev"]
+    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, then start the server
+    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress --no-install-recommends && immich-dev"]
     image: immich-server-dev:latest
     tty: true
     stdin_open: true

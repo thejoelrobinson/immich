@@ -477,16 +477,34 @@ export class MediaService extends BaseService {
     // For PDFs, try to render the first page using sharp if available
     // Otherwise, generate a placeholder thumbnail
     const isPdf = mimeTypes.isPdf(asset.originalPath);
+    const isOfficeDoc = this.isOfficeDocument(asset.originalPath);
+
+    this.logger.log(`Generating document thumbnail for ${asset.id}: isPdf=${isPdf}, isOfficeDoc=${isOfficeDoc}, path=${asset.originalPath}`);
 
     if (isPdf) {
       try {
         // Try to render PDF first page using pdftoppm (poppler-utils)
+        this.logger.debug(`Attempting PDF thumbnail generation for ${asset.id}`);
         const generated = await this.generatePdfThumbnails(asset, previewPath, thumbnailPath, image);
         if (generated) {
+          this.logger.log(`Successfully generated PDF thumbnail for ${asset.id}`);
           return generated;
         }
       } catch (error) {
-        this.logger.debug(`Failed to render PDF thumbnail, falling back to placeholder: ${error}`);
+        this.logger.warn(`Failed to render PDF thumbnail for ${asset.id}, falling back to placeholder: ${error}`);
+      }
+    } else if (isOfficeDoc) {
+      try {
+        // Try to convert Office document to PDF, then render first page
+        this.logger.debug(`Attempting Office document thumbnail generation for ${asset.id}`);
+        const generated = await this.generateOfficeThumbnails(asset, previewPath, thumbnailPath, image);
+        if (generated) {
+          this.logger.log(`Successfully generated Office document thumbnail for ${asset.id}`);
+          return generated;
+        }
+        this.logger.warn(`Office thumbnail generation returned null for ${asset.id}`);
+      } catch (error) {
+        this.logger.warn(`Failed to render Office document thumbnail for ${asset.id}, falling back to placeholder: ${error}`);
       }
     }
 
@@ -638,6 +656,108 @@ export class MediaService extends BaseService {
       .resize(width, height, { fit: 'inside' })
       .png()
       .toBuffer();
+  }
+
+  private isOfficeDocument(filePath: string): boolean {
+    const ext = filePath.toLowerCase().split('.').pop();
+    return ['docx', 'doc', 'pptx', 'ppt', 'xlsx', 'xls', 'odt'].includes(ext || '');
+  }
+
+  private async generateOfficeThumbnails(
+    asset: ThumbnailPathEntity & { originalPath: string },
+    previewPath: string,
+    thumbnailPath: string,
+    imageConfig: { preview: { size: number; format: ImageFormat; quality: number }; thumbnail: { size: number; format: ImageFormat; quality: number } },
+  ): Promise<{ previewPath: string; thumbnailPath: string; thumbhash: Buffer; exifImageWidth: number; exifImageHeight: number } | null> {
+    // Use LibreOffice to convert Office document to PDF, then render first page
+    const { execFile } = await import('child_process');
+    const { promisify } = await import('util');
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const execFileAsync = promisify(execFile);
+
+    // Create temp directory for LibreOffice output
+    const tempDir = path.dirname(previewPath);
+    const tempPdfBasename = `office-convert-${asset.id}`;
+    const sourceBasename = path.basename(asset.originalPath, path.extname(asset.originalPath));
+
+    try {
+      this.logger.log(`LibreOffice conversion starting for ${asset.id}`);
+      this.logger.log(`  Source: ${asset.originalPath}`);
+      this.logger.log(`  Output dir: ${tempDir}`);
+      this.logger.log(`  Expected output: ${sourceBasename}.pdf`);
+
+      // Convert Office document to PDF using LibreOffice
+      // --headless: Run without GUI
+      // --convert-to pdf: Convert to PDF format
+      // --outdir: Output directory
+      // Note: LD_PRELOAD forces LibreOffice to use the system HarfBuzz library instead of
+      // the jellyfin-ffmpeg bundled one, which lacks graphite2 support required by LibreOffice
+      // The path differs by architecture: aarch64 vs x86_64
+      const harfbuzzPath = process.arch === 'arm64'
+        ? '/lib/aarch64-linux-gnu/libharfbuzz.so.0'
+        : '/lib/x86_64-linux-gnu/libharfbuzz.so.0';
+
+      // Create unique user profile to allow concurrent LibreOffice instances
+      const userProfileDir = path.join(tempDir, `lo-profile-${asset.id}`);
+      await fs.mkdir(userProfileDir, { recursive: true });
+
+      const { stdout, stderr } = await execFileAsync('/usr/bin/libreoffice', [
+        '--headless',
+        `-env:UserInstallation=file://${userProfileDir}`,
+        '--convert-to', 'pdf',
+        '--outdir', tempDir,
+        asset.originalPath,
+      ], {
+        timeout: 60000, // 60 second timeout
+        env: {
+          ...process.env,
+          LD_PRELOAD: harfbuzzPath,
+        },
+      });
+
+      // Clean up user profile directory
+      await fs.rm(userProfileDir, { recursive: true, force: true }).catch(() => {});
+
+      this.logger.log(`LibreOffice stdout: ${stdout}`);
+      if (stderr) {
+        this.logger.warn(`LibreOffice stderr: ${stderr}`);
+      }
+
+      // LibreOffice creates PDF with same basename as input file
+      const convertedPdfPath = path.join(tempDir, `${sourceBasename}.pdf`);
+      this.logger.log(`Looking for converted PDF at: ${convertedPdfPath}`);
+
+      // Check if the converted PDF exists
+      await fs.access(convertedPdfPath);
+      this.logger.log(`Converted PDF found, generating thumbnail`);
+
+      // Now use the existing PDF thumbnail generation
+      // Create a temporary asset-like object for the PDF
+      const pdfAsset = {
+        ...asset,
+        originalPath: convertedPdfPath,
+      };
+
+      const result = await this.generatePdfThumbnails(pdfAsset, previewPath, thumbnailPath, imageConfig);
+
+      // Clean up the temporary PDF
+      await fs.unlink(convertedPdfPath).catch(() => {});
+
+      this.logger.log(`Successfully generated Office document thumbnail for ${asset.id}`);
+      return result;
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Failed to convert Office document with LibreOffice for ${asset.id}: ${errorMessage}`);
+      if (errorStack) {
+        this.logger.error(`Stack trace: ${errorStack}`);
+      }
+      // Clean up any temp files on error
+      const possiblePdfPath = path.join(tempDir, `${sourceBasename}.pdf`);
+      await fs.unlink(possiblePdfPath).catch(() => {});
+      return null;
+    }
   }
 
   @OnJob({ name: JobName.AssetEncodeVideoQueueAll, queue: QueueName.VideoConversion })

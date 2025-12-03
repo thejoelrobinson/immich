@@ -109,13 +109,17 @@ export class DocumentService extends BaseService {
         return this.extractTextFromRtf(filePath);
       }
 
+      case 'docx': {
+        return this.extractTextFromDocx(filePath);
+      }
+
       case 'doc':
-      case 'docx':
+      case 'pptx':
+      case 'ppt':
+      case 'xlsx':
+      case 'xls':
       case 'odt': {
-        // These formats would require additional libraries
-        // For now, return empty and log a warning
-        this.logger.warn(`Document format .${extension} text extraction not yet implemented for ${fileName}`);
-        return '';
+        return this.extractTextFromOfficeDocument(filePath, extension);
       }
 
       default: {
@@ -199,6 +203,43 @@ export class DocumentService extends BaseService {
       return text;
     } catch (error) {
       this.logger.error(`Failed to extract text from RTF ${filePath}: ${error}`);
+      return '';
+    }
+  }
+
+  private async extractTextFromDocx(filePath: string): Promise<string> {
+    try {
+      // Use mammoth for .docx files - it provides excellent text extraction
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, unicorn/prefer-module
+      const mammoth = require('mammoth');
+      const result = await mammoth.extractRawText({ path: filePath });
+      return result.value || '';
+    } catch (error) {
+      this.logger.error(`Failed to extract text from DOCX ${filePath}: ${error}`);
+      return '';
+    }
+  }
+
+  private async extractTextFromOfficeDocument(filePath: string, extension: string): Promise<string> {
+    try {
+      // Use officeparser for legacy Office formats and PowerPoint/Excel files
+      // It supports .doc, .ppt, .pptx, .xls, .xlsx, .odt
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, unicorn/prefer-module
+      const officeParser = require('officeparser');
+
+      const text = await new Promise<string>((resolve, reject) => {
+        officeParser.parseOffice(filePath, (data: string, err: Error | null) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(data || '');
+          }
+        });
+      });
+
+      return text;
+    } catch (error) {
+      this.logger.error(`Failed to extract text from ${extension.toUpperCase()} ${filePath}: ${error}`);
       return '';
     }
   }

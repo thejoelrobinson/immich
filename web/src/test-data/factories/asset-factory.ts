@@ -40,6 +40,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
   isTrashed: false,
+  isDocument: false,
   isImage: true,
   isVideo: false,
   duration: '0:00:00.00000',

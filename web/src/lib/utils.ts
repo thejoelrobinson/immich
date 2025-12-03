@@ -215,6 +215,14 @@ export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
   return createUrl(getAssetPlaybackPath(id), { ...authManager.params, c: cacheKey });
 };
 
+export const getDocumentPdfUrl = (options: string | AssetUrlOptions) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id, cacheKey } = options;
+  return createUrl(`/assets/${id}/document/pdf`, { ...authManager.params, c: cacheKey });
+};
+
 export const getProfileImageUrl = (user: UserResponseDto) =>
   createUrl(getUserProfileImagePath(user.id), { updatedAt: user.profileChangedAt });
 

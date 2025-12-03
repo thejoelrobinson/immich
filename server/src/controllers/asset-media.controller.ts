@@ -184,6 +184,23 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
   }
 
+  @Get(':id/document/pdf')
+  @FileResponse()
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Endpoint({
+    summary: 'View document as PDF',
+    description: 'Returns the document as a PDF. For Office documents, converts to PDF using LibreOffice.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async viewDocumentPdf(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    await sendFile(res, next, () => this.service.documentPdf(auth, id), this.logger);
+  }
+
   @Post('exist')
   @Authenticated()
   @Endpoint({

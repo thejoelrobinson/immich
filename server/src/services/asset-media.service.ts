@@ -257,6 +257,90 @@ export class AssetMediaService extends BaseService {
     });
   }
 
+  async documentPdf(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+
+    const asset = await this.findOrFail(id);
+
+    // If it's already a PDF, return the original
+    if (mimeTypes.isPdf(asset.originalPath)) {
+      return new ImmichFileResponse({
+        path: asset.originalPath,
+        fileName: asset.originalFileName,
+        contentType: 'application/pdf',
+        cacheControl: CacheControl.PrivateWithCache,
+      });
+    }
+
+    // For Office documents, convert to PDF using LibreOffice
+    if (!mimeTypes.isDocument(asset.originalPath)) {
+      throw new BadRequestException('Asset is not a document');
+    }
+
+    const pdfPath = await this.convertToPdf(asset);
+
+    return new ImmichFileResponse({
+      path: pdfPath,
+      fileName: getFileNameWithoutExtension(asset.originalFileName) + '.pdf',
+      contentType: 'application/pdf',
+      cacheControl: CacheControl.PrivateWithCache,
+    });
+  }
+
+  private async convertToPdf(asset: { id: string; originalPath: string }): Promise<string> {
+    const { execFile } = await import('child_process');
+    const { promisify } = await import('util');
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const os = await import('os');
+    const execFileAsync = promisify(execFile);
+
+    // Create temp directory for LibreOffice output
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-pdf-'));
+    const sourceBasename = path.basename(asset.originalPath, path.extname(asset.originalPath));
+
+    try {
+      // Convert Office document to PDF using LibreOffice
+      const harfbuzzPath = process.arch === 'arm64'
+        ? '/lib/aarch64-linux-gnu/libharfbuzz.so.0'
+        : '/lib/x86_64-linux-gnu/libharfbuzz.so.0';
+
+      // Create unique user profile to allow concurrent LibreOffice instances
+      const userProfileDir = path.join(tempDir, `lo-profile-${asset.id}`);
+      await fs.mkdir(userProfileDir, { recursive: true });
+
+      await execFileAsync('/usr/bin/libreoffice', [
+        '--headless',
+        `-env:UserInstallation=file://${userProfileDir}`,
+        '--convert-to', 'pdf',
+        '--outdir', tempDir,
+        asset.originalPath,
+      ], {
+        timeout: 120000, // 2 minute timeout for full document conversion
+        env: {
+          ...process.env,
+          LD_PRELOAD: harfbuzzPath,
+        },
+      });
+
+      // Clean up user profile directory
+      await fs.rm(userProfileDir, { recursive: true, force: true }).catch(() => {});
+
+      // LibreOffice creates PDF with same basename as input file
+      const convertedPdfPath = path.join(tempDir, `${sourceBasename}.pdf`);
+
+      // Check if the converted PDF exists
+      await fs.access(convertedPdfPath);
+
+      return convertedPdfPath;
+    } catch (error: unknown) {
+      // Clean up temp directory on error
+      await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new InternalServerErrorException(`Failed to convert document to PDF: ${errorMessage}`);
+    }
+  }
+
   async checkExistingAssets(
     auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,

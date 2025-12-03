@@ -117,6 +117,20 @@
   let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
 
+  // Document extensions for fallback detection (when asset.type is not set correctly)
+  const documentExtensions = ['.pdf', '.txt', '.epub', '.md', '.rtf', '.doc', '.docx', '.odt', '.pptx', '.ppt', '.xlsx', '.xls', '.csv', '.json', '.xml', '.html', '.htm'];
+
+  const isDocumentByExtension = (path: string | undefined) => {
+    if (!path) return false;
+    const lowerPath = path.toLowerCase();
+    return documentExtensions.some((ext) => lowerPath.endsWith(ext));
+  };
+
+  // Check if asset is a document either by type or by file extension (for backwards compatibility)
+  const isDocumentAsset = $derived(
+    asset.type === AssetTypeEnum.Document || isDocumentByExtension(asset.originalPath),
+  );
+
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
   };
@@ -528,7 +542,7 @@
               haveFadeTransition={$slideshowState !== SlideshowState.None && $slideshowTransition}
             />
           {/if}
-        {:else if asset.type === AssetTypeEnum.Document}
+        {:else if isDocumentAsset}
           <DocumentViewer
             {asset}
             onPreviousAsset={() => navigateAsset('previous')}
