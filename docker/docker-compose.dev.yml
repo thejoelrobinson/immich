@@ -17,8 +17,10 @@ services:
   immich-server:
     container_name: immich_server
     # Install poppler-utils for PDF thumbnail rendering, then start the server
-    command: ['/bin/bash', '-c', 'apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev']
+    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev"]
     image: immich-server-dev:latest
+    tty: true
+    stdin_open: true
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding

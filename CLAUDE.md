@@ -10,6 +10,34 @@ This is a **Walmart fork** of Immich, a high-performance, self-hosted photo and 
 - **Walmart branding**: Logo replaced with Walmart Spark
 - **Document support**: Added ability to upload, view, and search documents (PDF, TXT, EPUB, etc.)
 
+### Git Remote Setup
+This fork uses two remotes to stay in sync with the official Immich repo:
+
+| Remote | URL | Purpose |
+|--------|-----|---------|
+| `origin` | https://github.com/thejoelrobinson/immich.git | Your fork (push here) |
+| `upstream` | https://github.com/immich-app/immich.git | Official Immich (pull updates) |
+
+### Syncing with Upstream
+When the official Immich repo releases updates:
+
+```bash
+# Fetch latest from official Immich
+git fetch upstream
+
+# Merge their updates into your branch
+git merge upstream/main
+
+# Resolve any conflicts (keep your branding, take their bug fixes)
+# Then push to your fork
+git push origin main
+```
+
+**Conflict Resolution Tips:**
+- Walmart branding files: Keep your version
+- Document support files: Keep your version, but check for upstream API changes
+- Core Immich files: Usually take upstream, unless you've modified them
+
 ## Repository Structure
 
 ```
@@ -207,3 +235,48 @@ Key variables in `docker/.env`:
 - Single quotes
 - Semicolons required
 - ESLint + Prettier enforced
+
+## Troubleshooting
+
+### Server Container Restart Loop (Exit Code 0)
+
+**Problem**: The `immich_server` container keeps restarting with exit code 0, producing no logs.
+
+**Root Cause**: The `docker-compose.dev.yml` command format conflicts with the Dockerfile entrypoint. The Dockerfile.dev has:
+```dockerfile
+ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
+```
+
+If you use `command: ['/bin/bash', '-c', 'some command']`, it creates a double `/bin/bash -c` wrapper that breaks command parsing.
+
+**Solution**: The command must be a single string (passed as the argument to the existing `/bin/bash -c` entrypoint):
+```yaml
+command: ["apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev"]
+```
+
+Additionally, the server needs TTY to keep running:
+```yaml
+tty: true
+stdin_open: true
+```
+
+**Correct docker-compose.dev.yml server config**:
+```yaml
+immich-server:
+  container_name: immich_server
+  command: ["apt-get update -qq && apt-get install -y -qq poppler-utils && immich-dev"]
+  image: immich-server-dev:latest
+  tty: true
+  stdin_open: true
+  # ... rest of config
+```
+
+### pnpm Lockfile Errors
+
+**Problem**: `ERR_PNPM_OUTDATED_LOCKFILE Cannot install with frozen-lockfile`
+
+**Solution**: Run `pnpm install` from the project root to update the lockfile, then restart dev environment:
+```bash
+pnpm install
+make dev-down && make dev
+```

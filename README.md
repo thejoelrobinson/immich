@@ -1,4 +1,4 @@
-<p align="center"> 
+<p align="center">
   <br/>
   <a href="https://opensource.org/license/agpl-v3"><img src="https://img.shields.io/badge/License-AGPL_v3-blue.svg?color=3F51B5&style=for-the-badge&label=License&logoColor=000000&labelColor=ececec" alt="License: AGPLv3"></a>
   <a href="https://discord.immich.app">
@@ -12,6 +12,30 @@
 <img src="design/immich-logo-stacked-light.svg" width="300" title="Login With Custom URL">
 </p>
 <h3 align="center">High performance self-hosted photo and video management solution</h3>
+
+> [!NOTE]
+> **This is a Walmart fork** of [Immich](https://github.com/immich-app/immich) with custom branding and document support features.
+>
+> **Fork Modifications:**
+> - Walmart Spark branding replaces Immich logo
+> - Document support (PDF, TXT, EPUB, etc.) with text extraction and search
+>
+> **Development Setup:**
+> ```bash
+> cp docker/example.env docker/.env
+> # Edit docker/.env - set UPLOAD_LOCATION
+> make dev
+> ```
+> Access: http://localhost:3000 (web) | http://localhost:2283 (API)
+>
+> **Syncing with Upstream:**
+> ```bash
+> git fetch upstream
+> git merge upstream/main
+> git push origin main
+> ```
+>
+> **Troubleshooting:** If `immich_server` container keeps restarting with exit code 0, see [CLAUDE.md](./CLAUDE.md#troubleshooting) for the fix (requires `tty: true` and correct command format in docker-compose.dev.yml).
 <br/>
 <a href="https://immich.app">
 <img src="design/immich-screenshots.png" title="Main Screenshot">
