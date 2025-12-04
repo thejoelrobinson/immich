@@ -28,6 +28,18 @@ interface Element {
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;
 }
 
+// ONLYOFFICE Document Server API
+interface Window {
+  DocsAPI?: {
+    DocEditor: new (
+      containerId: string,
+      config: Record<string, unknown>,
+    ) => {
+      destroyEditor: () => void;
+    };
+  };
+}
+
 import type en from '$i18n/en.json';
 import 'svelte-i18n';
 

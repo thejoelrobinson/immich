@@ -202,4 +202,24 @@ export class EnvDto {
   @IsString()
   @Optional()
   REDIS_URL?: string;
+
+  // ONLYOFFICE Document Server
+  @ValidateBoolean({ optional: true })
+  ONLYOFFICE_ENABLED?: boolean;
+
+  @IsString()
+  @Optional()
+  ONLYOFFICE_URL?: string;
+
+  @IsString()
+  @Optional()
+  ONLYOFFICE_EXTERNAL_URL?: string;
+
+  @IsString()
+  @Optional()
+  ONLYOFFICE_JWT_SECRET?: string;
+
+  @IsString()
+  @Optional()
+  IMMICH_INTERNAL_URL?: string;
 }

@@ -16,8 +16,8 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, then start the server
-    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress --no-install-recommends && immich-dev"]
+    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, MS-compatible fonts for better rendering, then start the server
+    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation --no-install-recommends && immich-dev"]
     image: immich-server-dev:latest
     tty: true
     stdin_open: true
@@ -158,6 +158,41 @@ services:
     ports:
       - 5432:5432
     shm_size: 128mb
+
+  # ONLYOFFICE Document Server for Office document viewing
+  onlyoffice:
+    container_name: immich_onlyoffice
+    # Unlimited connections community build (official has 20-connection limit)
+    image: thomisus/onlyoffice-documentserver-unlimited:latest
+    environment:
+      # JWT authentication for secure document access
+      JWT_ENABLED: "true"
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-immich-onlyoffice-dev-secret}
+      JWT_HEADER: Authorization
+      # Disable WOPI - we use direct URL access
+      WOPI_ENABLED: "false"
+      # Allow internal network access for document downloads
+      ALLOW_PRIVATE_IP_ADDRESS: "true"
+      ALLOW_META_IP_ADDRESS: "true"
+    ports:
+      - 8080:80
+    volumes:
+      - onlyoffice-data:/var/www/onlyoffice/Data
+      - onlyoffice-logs:/var/log/onlyoffice
+      # Init script to increase file size limits (100MB -> 500MB) and register custom fonts
+      - ./onlyoffice-init.sh:/onlyoffice-init.sh:ro
+      # Custom corporate fonts (Bogle, EverydaySans)
+      - ../Fonts:/custom-fonts:ro
+    # Override entrypoint to run our init script before ONLYOFFICE starts
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["/onlyoffice-init.sh & exec /app/ds/run-document-server.sh"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
@@ -184,6 +219,8 @@ volumes:
   prometheus-data:
   grafana-data:
   postgres-dev-data:
+  onlyoffice-data:
+  onlyoffice-logs:
   pnpm-store:
   server-node_modules:
   web-node_modules:

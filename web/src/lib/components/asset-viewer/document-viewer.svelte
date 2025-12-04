@@ -1,5 +1,7 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import OnlyOfficeViewer from '$lib/components/asset-viewer/onlyoffice-viewer.svelte';
+  import { onlyOfficeManager } from '$lib/managers/onlyoffice-manager.svelte';
   import { getAssetOriginalUrl, getDocumentPdfUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -17,9 +19,8 @@
   let documentLoaded = $state(false);
   let documentError = $state(false);
   let iframeElement = $state<HTMLIFrameElement>();
-  let pptxContainer = $state<HTMLDivElement>();
-  let currentSlide = $state(0);
-  let totalSlides = $state(0);
+  let onlyOfficeEnabled = $state(false);
+  let onlyOfficeFailed = $state(false);
 
   const documentUrl = $derived(getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash }));
   const pdfUrl = $derived(getDocumentPdfUrl({ id: asset.id, cacheKey: asset.thumbhash }));
@@ -30,18 +31,21 @@
   // Native PDF - render directly
   const isPdf = $derived(filename.endsWith('.pdf'));
 
-  // PowerPoint files - use client-side pptx-preview (LibreOffice Impress PDF export has issues)
-  const isPptx = $derived(filename.endsWith('.pptx') || filename.endsWith('.ppt'));
-
-  // Office documents (non-PowerPoint) - convert to PDF server-side via LibreOffice
+  // Office documents (including PowerPoint) - can use ONLYOFFICE or LibreOffice fallback
   const isOfficeDoc = $derived(
-    ['.docx', '.doc', '.xlsx', '.xls', '.odt'].some((ext) => filename.endsWith(ext)),
+    ['.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.odt', '.ods', '.odp'].some((ext) => filename.endsWith(ext)),
   );
 
   // Text-based files - render directly in iframe
   const isText = $derived(
     ['.txt', '.md', '.csv', '.json', '.xml', '.html', '.htm', '.rtf'].some((ext) => filename.endsWith(ext)),
   );
+
+  // Use ONLYOFFICE for Office docs if enabled and not failed
+  const useOnlyOffice = $derived(isOfficeDoc && onlyOfficeEnabled && !onlyOfficeFailed);
+
+  // Use LibreOffice fallback for Office docs when ONLYOFFICE not available or failed
+  const useLibreOfficeFallback = $derived(isOfficeDoc && (!onlyOfficeEnabled || onlyOfficeFailed));
 
   const onLoad = () => {
     documentLoaded = true;
@@ -52,104 +56,45 @@
     documentLoaded = true;
   };
 
-  // Load PPTX file using pptx-preview
-  let pptxPreviewer: {
-    slideCount: number;
-    preview: (file: ArrayBuffer) => Promise<unknown>;
-    renderNextSlide: () => void;
-    renderPreSlide: () => void;
-    destroy: () => void;
-  } | null = null;
-
-  const loadPptx = async () => {
-    try {
-      const response = await fetch(documentUrl);
-      if (!response.ok) {
-        throw new Error('Failed to fetch document');
-      }
-      const arrayBuffer = await response.arrayBuffer();
-
-      // Dynamic import of pptx-preview (browser-only)
-      const pptxPreview = await import('pptx-preview');
-
-      if (pptxContainer) {
-        // Clear previous content
-        pptxContainer.innerHTML = '';
-
-        // Initialize the previewer with 'list' mode to show all slides
-        pptxPreviewer = pptxPreview.init(pptxContainer, {
-          mode: 'list',
-          width: 960,
-        });
-
-        // Load and preview the PPTX
-        await pptxPreviewer.preview(arrayBuffer);
-
-        // Get slide count
-        totalSlides = pptxPreviewer.slideCount || 1;
-        currentSlide = 1;
-      }
-
-      documentLoaded = true;
-    } catch (error) {
-      console.error('Failed to load PPTX:', error);
-      documentError = true;
-      documentLoaded = true;
-    }
-  };
-
-  const nextSlide = () => {
-    if (currentSlide < totalSlides) {
-      currentSlide++;
-      scrollToSlide(currentSlide);
-    }
-  };
-
-  const prevSlide = () => {
-    if (currentSlide > 1) {
-      currentSlide--;
-      scrollToSlide(currentSlide);
-    }
-  };
-
-  const scrollToSlide = (slideNum: number) => {
-    if (pptxContainer) {
-      const slides = pptxContainer.querySelectorAll('.slide-container, .pptx-slide, [class*="slide"]');
-      const targetSlide = slides[slideNum - 1];
-      if (targetSlide) {
-        targetSlide.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
+  const onOnlyOfficeError = () => {
+    // ONLYOFFICE failed, fall back to LibreOffice PDF conversion
+    console.warn('ONLYOFFICE failed, falling back to LibreOffice PDF conversion');
+    onlyOfficeFailed = true;
   };
 
   onMount(() => {
-    if (isPptx) {
-      loadPptx();
-    } else if (iframeElement) {
-      iframeElement.addEventListener('load', onLoad, { passive: true });
-      iframeElement.addEventListener('error', onError, { passive: true });
+    // Initialize ONLYOFFICE manager asynchronously
+    onlyOfficeManager.init().then(() => {
+      onlyOfficeEnabled = onlyOfficeManager.isEnabled;
+    });
+  });
+
+  // Handle iframe event listeners
+  $effect(() => {
+    const iframe = iframeElement;
+    if (iframe) {
+      iframe.addEventListener('load', onLoad, { passive: true });
+      iframe.addEventListener('error', onError, { passive: true });
+      return () => {
+        iframe.removeEventListener('load', onLoad);
+        iframe.removeEventListener('error', onError);
+      };
     }
-    return () => {
-      if (iframeElement) {
-        iframeElement.removeEventListener('load', onLoad);
-        iframeElement.removeEventListener('error', onError);
-      }
-    };
+  });
+
+  // Reset ONLYOFFICE failure state when asset changes
+  $effect(() => {
+    const _id = asset.id;
+    onlyOfficeFailed = false;
+    documentLoaded = false;
+    documentError = false;
   });
 
   const handleKeydown = (event: KeyboardEvent) => {
-    if (event.key === 'ArrowLeft') {
-      if (isPptx && currentSlide > 1) {
-        prevSlide();
-      } else if (onPreviousAsset) {
-        onPreviousAsset();
-      }
-    } else if (event.key === 'ArrowRight') {
-      if (isPptx && currentSlide < totalSlides) {
-        nextSlide();
-      } else if (onNextAsset) {
-        onNextAsset();
-      }
+    if (event.key === 'ArrowLeft' && onPreviousAsset) {
+      onPreviousAsset();
+    } else if (event.key === 'ArrowRight' && onNextAsset) {
+      onNextAsset();
     }
   };
 </script>
@@ -187,39 +132,11 @@
           class:opacity-0={!documentLoaded}
           class:opacity-100={documentLoaded}
         ></iframe>
-      {:else if isPptx}
-        <!-- PowerPoint viewer using pptx-preview (client-side) -->
-        <div
-          class="absolute inset-0 overflow-auto bg-gray-800"
-          class:opacity-0={!documentLoaded}
-          class:opacity-100={documentLoaded}
-        >
-          <!-- Slide navigation -->
-          {#if totalSlides > 1}
-            <div class="sticky top-0 z-10 bg-gray-900/90 backdrop-blur-sm p-2 flex items-center justify-center gap-4">
-              <button
-                onclick={prevSlide}
-                disabled={currentSlide <= 1}
-                class="px-4 py-2 bg-immich-primary hover:bg-immich-primary/80 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-white transition-colors"
-              >
-                ← {$t('previous')}
-              </button>
-              <span class="text-white">
-                Slide {currentSlide} / {totalSlides}
-              </span>
-              <button
-                onclick={nextSlide}
-                disabled={currentSlide >= totalSlides}
-                class="px-4 py-2 bg-immich-primary hover:bg-immich-primary/80 disabled:bg-gray-600 disabled:cursor-not-allowed rounded text-white transition-colors"
-              >
-                {$t('next')} →
-              </button>
-            </div>
-          {/if}
-          <div bind:this={pptxContainer} class="pptx-container p-4 flex flex-col items-center gap-8"></div>
-        </div>
-      {:else if isOfficeDoc}
-        <!-- Office documents (DOCX, XLSX, DOC, ODT) - server-side LibreOffice PDF conversion -->
+      {:else if useOnlyOffice}
+        <!-- Office documents via ONLYOFFICE (native rendering, no file size limit) -->
+        <OnlyOfficeViewer {asset} onError={onOnlyOfficeError} {onPreviousAsset} {onNextAsset} />
+      {:else if useLibreOfficeFallback}
+        <!-- Office documents fallback - server-side LibreOffice PDF conversion -->
         <iframe
           bind:this={iframeElement}
           src={pdfUrl}
@@ -281,17 +198,5 @@
   #spinner {
     visibility: hidden;
     animation: 0s linear 0.4s forwards delayedVisibility;
-  }
-
-  /* PowerPoint slide styling */
-  .pptx-container :global(.slide-container),
-  .pptx-container :global(.pptx-slide),
-  .pptx-container :global([class*='slide']) {
-    background: white;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    max-width: 960px;
-    width: 100%;
-    margin: 0 auto;
   }
 </style>

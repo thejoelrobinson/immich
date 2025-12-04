@@ -9,6 +9,7 @@ This is a **Walmart fork** of Immich, a high-performance, self-hosted photo and 
 ### Fork Modifications
 - **Walmart branding**: Logo replaced with Walmart Spark
 - **Document support**: Added ability to upload, view, and search documents (PDF, TXT, EPUB, etc.)
+- **ONLYOFFICE integration**: Native Office document viewing for DOCX, XLSX, PPTX (handles large files better than LibreOffice)
 
 ### Git Remote Setup
 This fork uses two remotes to stay in sync with the official Immich repo:
@@ -165,9 +166,9 @@ This fork adds document file support beyond images and videos.
 | Format | Text Extraction | Thumbnail | Viewer |
 |--------|-----------------|-----------|--------|
 | PDF | Yes (pdf-parse) | First page render (pdftoppm) | Native browser iframe |
-| DOCX, DOC, ODT | Yes (mammoth/officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
-| XLSX, XLS | Yes (officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
-| PPTX, PPT | Yes (officeparser) | LibreOffice render | Server-side PDF (LibreOffice) |
+| DOCX, DOC, ODT | Yes (mammoth/officeparser) | LibreOffice render | ONLYOFFICE (primary) / LibreOffice PDF (fallback) |
+| XLSX, XLS, ODS | Yes (officeparser) | LibreOffice render | ONLYOFFICE (primary) / LibreOffice PDF (fallback) |
+| PPTX, PPT, ODP | Yes (officeparser) | LibreOffice render | ONLYOFFICE (primary) / LibreOffice PDF (fallback) |
 | TXT, MD, CSV, JSON, XML, HTML | Yes | Placeholder icon | Native browser iframe |
 | EPUB | Yes (epub2) | Placeholder icon | Download only |
 | RTF | Yes (basic) | Placeholder icon | Native browser iframe |
@@ -176,21 +177,32 @@ This fork adds document file support beyond images and videos.
 - **`server/src/services/document.service.ts`** - Text extraction from documents
 - **`server/src/services/media.service.ts`** - Thumbnail generation (PDF via pdftoppm, Office via LibreOffice)
 - **`server/src/services/asset-media.service.ts`** - `documentPdf()` method for Office-to-PDF conversion
+- **`server/src/services/onlyoffice.service.ts`** - ONLYOFFICE JWT token generation and document config
 - **`server/src/controllers/asset-media.controller.ts`** - `GET /assets/:id/document/pdf` endpoint
-- **`web/src/lib/components/asset-viewer/document-viewer.svelte`** - Multi-format document viewer
+- **`server/src/controllers/onlyoffice.controller.ts`** - ONLYOFFICE API endpoints (`/api/onlyoffice/*`)
+- **`server/src/dtos/onlyoffice.dto.ts`** - ONLYOFFICE DTOs and file type mappings
+- **`web/src/lib/components/asset-viewer/document-viewer.svelte`** - Multi-format document viewer with ONLYOFFICE fallback
+- **`web/src/lib/components/asset-viewer/onlyoffice-viewer.svelte`** - ONLYOFFICE editor component
+- **`web/src/lib/managers/onlyoffice-manager.svelte.ts`** - ONLYOFFICE script loading and config management
 - **`web/src/lib/utils.ts`** - `getDocumentPdfUrl()` helper
 - **`server/src/utils/mime-types.ts`** - Document MIME type detection (`isDocument()`, `isPdf()`)
 
 ### Document Viewer Architecture
 
-The document viewer (`document-viewer.svelte`) uses server-side PDF conversion for all Office formats, providing 100% fidelity to the original document formatting:
+The document viewer (`document-viewer.svelte`) uses a tiered approach for Office documents:
 
 ```
 PDF              → Native browser iframe (documentUrl)
-Office docs      → Server-side LibreOffice PDF conversion (pdfUrl endpoint)
+Office docs      → ONLYOFFICE (primary) → LibreOffice PDF fallback
 (DOCX, DOC, ODT, XLSX, XLS, PPTX, PPT)
 Text files       → Native browser iframe (documentUrl)
 ```
+
+**ONLYOFFICE Integration (Primary for Office docs):**
+- Native client-side rendering - no file size limitations
+- Handles large files (200MB+) that fail with LibreOffice
+- JWT-authenticated document download from Immich server
+- Falls back to LibreOffice PDF conversion if ONLYOFFICE unavailable
 
 ### How It Works
 1. Upload triggers `AssetType.Document` classification via `mimeTypes.assetType()`
@@ -215,6 +227,61 @@ This endpoint:
 2. Converts Office documents to PDF using LibreOffice headless mode
 3. Creates unique temp directory per conversion to support concurrency
 4. Returns the PDF with appropriate caching headers
+
+### ONLYOFFICE Configuration
+
+ONLYOFFICE Document Server provides native Office document viewing. It runs as a separate Docker container.
+
+**Environment Variables (docker/.env):**
+```bash
+ONLYOFFICE_ENABLED=true
+ONLYOFFICE_URL=http://onlyoffice:80              # Internal Docker URL
+ONLYOFFICE_EXTERNAL_URL=http://localhost:8080     # Browser-accessible URL
+ONLYOFFICE_JWT_SECRET=your-secret-here            # Shared JWT secret
+```
+
+**API Endpoints:**
+- `GET /api/onlyoffice/config` - Get ONLYOFFICE status
+- `GET /api/onlyoffice/available` - Health check
+- `GET /api/onlyoffice/document/:id` - Get JWT-signed document config
+- `GET /api/onlyoffice/download/:id` - Document download for ONLYOFFICE server
+
+**Architecture Flow:**
+1. Frontend checks `/api/onlyoffice/config` for availability
+2. Frontend loads ONLYOFFICE API script from `ONLYOFFICE_EXTERNAL_URL`
+3. Frontend requests document config from `/api/onlyoffice/document/:id`
+4. Server generates JWT-signed config with download URL
+5. ONLYOFFICE server fetches document from `/api/onlyoffice/download/:id`
+6. Document renders client-side in browser
+
+**File Size Limits:**
+Default ONLYOFFICE limits are 100MB. This fork automatically increases them to 500MB via the init script (`docker/onlyoffice-init.sh`).
+
+The init script:
+1. Runs in background on container startup
+2. Waits for ONLYOFFICE config file to be created
+3. Updates `limits_tempfile_upload` and `maxDownloadBytes` to 500MB
+4. Restarts the converter service to apply changes
+5. Skips modification if already configured (idempotent)
+
+**Manual override (if needed):**
+```bash
+docker exec immich_onlyoffice sed -i 's/"limits_tempfile_upload": 104857600/"limits_tempfile_upload": 524288000/' /etc/onlyoffice/documentserver/default.json
+docker exec immich_onlyoffice sed -i 's/"maxDownloadBytes": 104857600/"maxDownloadBytes": 524288000/' /etc/onlyoffice/documentserver/default.json
+docker exec immich_onlyoffice supervisorctl restart ds:converter
+```
+
+**Custom Fonts:**
+Corporate fonts (Bogle, EverydaySans) are automatically installed from the `/Fonts` directory:
+- Mounted at `/custom-fonts` in the container
+- Copied to `/usr/share/fonts/truetype/custom/`
+- Font list regenerated via `documentserver-generate-allfonts.sh`
+- Installation is tracked with a marker file to avoid redundant regeneration
+
+To add more fonts, place `.otf` or `.ttf` files in the `/Fonts` directory and recreate the container.
+
+**Document Key Requirements:**
+ONLYOFFICE document keys must only contain `0-9-.a-zA-Z_=` characters. The service automatically sanitizes keys.
 
 ### Document Thumbnail Aspect Ratio
 PDF thumbnails preserve the original page aspect ratio (capped 9:16 to 16:9). The frontend calculates container height from `asset.ratio` for documents to prevent cropping.
@@ -266,6 +333,10 @@ docker exec -it immich_server sh
 Key variables in `docker/.env`:
 - `UPLOAD_LOCATION` - Storage directory for media
 - `DB_PASSWORD`, `DB_USERNAME`, `DB_DATABASE_NAME` - PostgreSQL config
+- `ONLYOFFICE_ENABLED` - Enable ONLYOFFICE integration (true/false)
+- `ONLYOFFICE_URL` - Internal Docker URL for ONLYOFFICE
+- `ONLYOFFICE_EXTERNAL_URL` - Browser-accessible URL for ONLYOFFICE
+- `ONLYOFFICE_JWT_SECRET` - Shared JWT secret for document authentication
 
 ## Debugging
 
@@ -324,3 +395,38 @@ immich-server:
 pnpm install
 make dev-down && make dev
 ```
+
+### ONLYOFFICE Troubleshooting
+
+**Problem**: ONLYOFFICE viewer fails with "invalid signature" JWT error
+
+**Solution**: Ensure JWT secrets match between Immich and ONLYOFFICE:
+```bash
+# Check Immich JWT secret
+docker exec immich_server printenv | grep ONLYOFFICE_JWT_SECRET
+
+# Check ONLYOFFICE JWT secret
+docker exec immich_onlyoffice printenv | grep JWT_SECRET
+```
+
+**Problem**: Large files fail with EMSGSIZE error
+
+**Solution**: ONLYOFFICE default limit is 100MB. Increase limits:
+```bash
+docker exec immich_onlyoffice sed -i 's/"limits_tempfile_upload": 104857600/"limits_tempfile_upload": 524288000/' /etc/onlyoffice/documentserver/default.json
+docker exec immich_onlyoffice sed -i 's/"maxDownloadBytes": 104857600/"maxDownloadBytes": 524288000/' /etc/onlyoffice/documentserver/default.json
+docker exec immich_onlyoffice supervisorctl restart ds:docservice ds:converter
+```
+Note: These changes are lost on container restart.
+
+**Problem**: ONLYOFFICE container unhealthy with "nc: port number invalid" errors
+
+**Solution**: The local.json config file is malformed. Remove it and restart:
+```bash
+docker exec immich_onlyoffice rm -f /etc/onlyoffice/documentserver/local.json
+docker restart immich_onlyoffice
+```
+
+**Problem**: Document keys contain invalid characters (+ or /)
+
+**Solution**: ONLYOFFICE only accepts `0-9-.a-zA-Z_=` in document keys. The `onlyoffice.service.ts` automatically sanitizes these by replacing `+` → `A` and `/` → `B`.

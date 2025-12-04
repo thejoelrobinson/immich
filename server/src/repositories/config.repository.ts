@@ -108,6 +108,14 @@ export interface EnvData {
     installFolder?: string;
   };
 
+  onlyoffice: {
+    enabled: boolean;
+    url: string;
+    externalUrl: string;
+    jwtSecret: string;
+    immichInternalUrl: string;
+  };
+
   noColor: boolean;
   nodeVersion?: string;
 }
@@ -329,6 +337,14 @@ const getEnv = (): EnvData => {
     plugins: {
       enabled: !!dto.IMMICH_PLUGINS_ENABLED,
       installFolder: dto.IMMICH_PLUGINS_INSTALL_FOLDER,
+    },
+
+    onlyoffice: {
+      enabled: !!dto.ONLYOFFICE_ENABLED,
+      url: dto.ONLYOFFICE_URL || 'http://onlyoffice:80',
+      externalUrl: dto.ONLYOFFICE_EXTERNAL_URL || 'http://localhost:8080',
+      jwtSecret: dto.ONLYOFFICE_JWT_SECRET || '',
+      immichInternalUrl: dto.IMMICH_INTERNAL_URL || 'http://immich-server:2283',
     },
 
     noColor: !!dto.NO_COLOR,

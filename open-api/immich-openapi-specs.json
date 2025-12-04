@@ -7013,6 +7013,166 @@
         "x-immich-state": "Stable"
       }
     },
+    "/onlyoffice/available": {
+      "get": {
+        "operationId": "checkAvailable",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Check if ONLYOFFICE is available",
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
+    "/onlyoffice/config": {
+      "get": {
+        "operationId": "getConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlyOfficeConfigResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get ONLYOFFICE configuration status",
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
+    "/onlyoffice/document/{id}": {
+      "get": {
+        "operationId": "getDocumentConfig",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnlyOfficeDocumentConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get document configuration for ONLYOFFICE editor",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/onlyoffice/download/{id}": {
+      "get": {
+        "operationId": "downloadDocument",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Download document for ONLYOFFICE (authenticated via token query parameter)\nThis endpoint is called by ONLYOFFICE server to fetch the document content",
+        "tags": [
+          "Assets"
+        ]
+      }
+    },
     "/partners": {
       "get": {
         "description": "Retrieve a list of partners with whom assets are shared.",
@@ -17333,6 +17493,52 @@
         },
         "required": [
           "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnlyOfficeConfigResponseDto": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "externalUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "externalUrl"
+        ],
+        "type": "object"
+      },
+      "OnlyOfficeDocumentConfigDto": {
+        "properties": {
+          "documentKey": {
+            "type": "string"
+          },
+          "documentType": {
+            "type": "object"
+          },
+          "documentUrl": {
+            "type": "string"
+          },
+          "fileType": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "documentKey",
+          "documentType",
+          "documentUrl",
+          "fileType",
+          "title",
+          "token"
         ],
         "type": "object"
       },

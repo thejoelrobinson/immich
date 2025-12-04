@@ -295,31 +295,56 @@ export class AssetMediaService extends BaseService {
     const os = await import('os');
     const execFileAsync = promisify(execFile);
 
+    // Get file size for timeout scaling (larger files need more time)
+    let fileSizeMB = 50; // default assumption
+    try {
+      const stats = await fs.stat(asset.originalPath);
+      fileSizeMB = stats.size / (1024 * 1024);
+    } catch {
+      // Continue with default if stat fails
+    }
+
+    // Scale timeout based on file size: base 2 min + 1 min per 50MB, max 10 min
+    const baseTimeout = 120000; // 2 minutes
+    const timeoutPerMB = 1200; // ~1 min per 50MB
+    const maxTimeout = 600000; // 10 minutes max
+    const timeout = Math.min(baseTimeout + Math.ceil(fileSizeMB * timeoutPerMB), maxTimeout);
+
     // Create temp directory for LibreOffice output
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-pdf-'));
     const sourceBasename = path.basename(asset.originalPath, path.extname(asset.originalPath));
 
     try {
       // Convert Office document to PDF using LibreOffice
+      // Use libharfbuzz.so.0 (not .so symlink) for graphite2 support required by LibreOffice 25.x
       const harfbuzzPath = process.arch === 'arm64'
-        ? '/usr/lib/aarch64-linux-gnu/libharfbuzz.so'
-        : '/usr/lib/x86_64-linux-gnu/libharfbuzz.so';
+        ? '/usr/lib/aarch64-linux-gnu/libharfbuzz.so.0'
+        : '/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0';
 
       // Create unique user profile to allow concurrent LibreOffice instances
       const userProfileDir = path.join(tempDir, `lo-profile-${asset.id}`);
       await fs.mkdir(userProfileDir, { recursive: true });
 
-      await execFileAsync('/usr/bin/libreoffice', [
+      this.logger.debug(`Converting document to PDF: ${asset.originalPath} (${Math.round(fileSizeMB)}MB, timeout: ${timeout / 1000}s)`);
+
+      const { stderr } = await execFileAsync('/usr/bin/libreoffice', [
         '--headless',
+        '--invisible',
+        '--nologo',
+        '--nofirststartwizard',
+        '--norestore',
         `-env:UserInstallation=file://${userProfileDir}`,
-        '--convert-to', 'pdf',
+        '--convert-to', 'pdf:writer_pdf_Export',
         '--outdir', tempDir,
         asset.originalPath,
       ], {
-        timeout: 120000, // 2 minute timeout for full document conversion
+        timeout,
+        maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large outputs
         env: {
           ...process.env,
           LD_PRELOAD: harfbuzzPath,
+          // Increase Java heap for LibreOffice (helps with large embedded images)
+          _JAVA_OPTIONS: '-Xmx2048m -Xms512m',
         },
       });
 
@@ -330,13 +355,33 @@ export class AssetMediaService extends BaseService {
       const convertedPdfPath = path.join(tempDir, `${sourceBasename}.pdf`);
 
       // Check if the converted PDF exists
-      await fs.access(convertedPdfPath);
+      try {
+        await fs.access(convertedPdfPath);
+      } catch {
+        // PDF wasn't created - LibreOffice silently failed
+        await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+        const errorHint = stderr?.includes('Error:') ? ` LibreOffice error: ${stderr.slice(0, 200)}` : '';
+        this.logger.warn(`LibreOffice PDF conversion failed for ${asset.originalPath}${errorHint}`);
+        throw new BadRequestException(
+          `Could not generate PDF preview for this document. The file may contain unsupported content or be too complex. Please download to view.`
+        );
+      }
 
+      this.logger.debug(`Successfully converted document to PDF: ${convertedPdfPath}`);
       return convertedPdfPath;
     } catch (error: unknown) {
       // Clean up temp directory on error
       await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      if (error instanceof BadRequestException) throw error;
       const errorMessage = error instanceof Error ? error.message : String(error);
+      const isTimeout = errorMessage.includes('ETIMEDOUT') || errorMessage.includes('killed');
+      if (isTimeout) {
+        this.logger.warn(`LibreOffice conversion timed out for ${asset.originalPath} (${Math.round(fileSizeMB)}MB)`);
+        throw new BadRequestException(
+          `Document conversion timed out. The file may be too large or complex for preview. Please download to view.`
+        );
+      }
+      this.logger.error(`LibreOffice conversion error for ${asset.originalPath}: ${errorMessage}`);
       throw new InternalServerErrorException(`Failed to convert document to PDF: ${errorMessage}`);
     }
   }
