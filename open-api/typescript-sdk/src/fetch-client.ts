@@ -650,6 +650,46 @@ export type AuthStatusResponseDto = {
 export type ValidateAccessTokenResponseDto = {
     authStatus: boolean;
 };
+export type TextPositionDto = {
+    /** Normalized height (0-1) */
+    height: number;
+    /** Text content */
+    text: string;
+    /** Normalized width (0-1) */
+    width: number;
+    /** Normalized x coordinate (0-1) */
+    x: number;
+    /** Normalized y coordinate (0-1) */
+    y: number;
+};
+export type PageTextPositionsResponseDto = {
+    /** Page number (1-indexed) */
+    pageNumber: number;
+    /** Full text of the page */
+    text: string;
+    /** Text items with positions */
+    textItems: TextPositionDto[] | null;
+};
+export type DocumentSearchMatchDto = {
+    /** Character offset where match ends in page text */
+    matchEnd: number;
+    /** Character offset where match starts in page text */
+    matchStart: number;
+    /** Page number (1-indexed) */
+    pageNumber: number;
+    /** Text snippet with context around the match */
+    textSnippet: string;
+};
+export type DocumentSearchMatchesResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** List of matches */
+    matches: DocumentSearchMatchDto[];
+    /** Search term used */
+    searchTerm: string;
+    /** Total number of matches found */
+    totalMatches: number;
+};
 export type AssetIdsDto = {
     assetIds: string[];
 };
@@ -727,6 +767,7 @@ export type QueueResponseDto = {
 export type QueuesResponseDto = {
     backgroundTask: QueueResponseDto;
     backupDatabase: QueueResponseDto;
+    documentExtraction: QueueResponseDto;
     duplicateDetection: QueueResponseDto;
     faceDetection: QueueResponseDto;
     facialRecognition: QueueResponseDto;
@@ -859,6 +900,18 @@ export type OAuthCallbackDto = {
     codeVerifier?: string;
     state?: string;
     url: string;
+};
+export type OnlyOfficeConfigResponseDto = {
+    enabled: boolean;
+    externalUrl: string;
+};
+export type OnlyOfficeDocumentConfigDto = {
+    documentKey: string;
+    documentType: object;
+    documentUrl: string;
+    fileType: string;
+    title: string;
+    token: string;
 };
 export type PartnerResponseDto = {
     avatarColor: UserAvatarColor;
@@ -1442,6 +1495,7 @@ export type JobSettingsDto = {
 };
 export type SystemConfigJobDto = {
     backgroundTask: JobSettingsDto;
+    documentExtraction: JobSettingsDto;
     faceDetection: JobSettingsDto;
     library: JobSettingsDto;
     metadataExtraction: JobSettingsDto;
@@ -2509,6 +2563,24 @@ export function updateAsset({ id, updateAssetDto }: {
     })));
 }
 /**
+ * View document as PDF
+ */
+export function viewDocumentPdf({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/assets/${encodeURIComponent(id)}/document/pdf${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Get asset metadata
  */
 export function getAssetMetadata({ id }: {
@@ -2788,6 +2860,54 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     }>("/auth/validateToken", {
         ...opts,
         method: "POST"
+    }));
+}
+export function getAllPages({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PageTextPositionsResponseDto[];
+    }>(`/documents/${encodeURIComponent(id)}/pages${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+export function getPageTextPositions({ id, key, pageNumber, slug }: {
+    id: string;
+    key?: string;
+    pageNumber: number;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PageTextPositionsResponseDto;
+    }>(`/documents/${encodeURIComponent(id)}/pages/${encodeURIComponent(pageNumber)}/text-positions${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+export function getSearchMatches({ id, key, q, slug }: {
+    id: string;
+    key?: string;
+    q: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DocumentSearchMatchesResponseDto;
+    }>(`/documents/${encodeURIComponent(id)}/search-matches${QS.query(QS.explode({
+        key,
+        q,
+        slug
+    }))}`, {
+        ...opts
     }));
 }
 /**
@@ -3392,6 +3512,60 @@ export function unlinkOAuthAccount(opts?: Oazapfts.RequestOpts) {
     }>("/oauth/unlink", {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Check if ONLYOFFICE is available
+ */
+export function checkAvailable(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/onlyoffice/available", {
+        ...opts
+    }));
+}
+/**
+ * Get ONLYOFFICE configuration status
+ */
+export function getConfig(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnlyOfficeConfigResponseDto;
+    }>("/onlyoffice/config", {
+        ...opts
+    }));
+}
+/**
+ * Get document configuration for ONLYOFFICE editor
+ */
+export function getDocumentConfig({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: OnlyOfficeDocumentConfigDto;
+    }>(`/onlyoffice/document/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Download document for ONLYOFFICE (authenticated via token query parameter)
+ * This endpoint is called by ONLYOFFICE server to fetch the document content
+ */
+export function downloadDocument({ id, token }: {
+    id: string;
+    token: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchBlob<{
+        status: 200;
+        data: Blob;
+    }>(`/onlyoffice/download/${encodeURIComponent(id)}${QS.query(QS.explode({
+        token
+    }))}`, {
+        ...opts
     }));
 }
 /**
@@ -4420,7 +4594,7 @@ export function getSyncStream({ syncStreamDto }: {
 /**
  * Get system configuration
  */
-export function getConfig(opts?: Oazapfts.RequestOpts) {
+export function getConfig2(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SystemConfigDto;
@@ -5306,6 +5480,7 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
+    DocumentExtraction = "documentExtraction",
     Workflow = "workflow"
 }
 export enum QueueCommand {

@@ -92,6 +92,14 @@ const envData: EnvData = {
     installFolder: '/app/data/plugins',
   },
 
+  onlyoffice: {
+    enabled: false,
+    url: 'http://onlyoffice:80',
+    externalUrl: 'http://localhost:8080',
+    jwtSecret: '',
+    immichInternalUrl: 'http://immich-server:2283',
+  },
+
   noColor: false,
 };
 

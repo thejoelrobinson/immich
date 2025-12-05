@@ -42,6 +42,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { DocumentTextRepository } from 'src/repositories/document-text.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -235,6 +236,7 @@ export type ServiceOverrides = {
   metadata: MetadataRepository;
   move: MoveRepository;
   notification: NotificationRepository;
+  documentText: DocumentTextRepository;
   ocr: OcrRepository;
   oauth: OAuthRepository;
   partner: PartnerRepository;
@@ -308,6 +310,7 @@ export const getMocks = () => {
     metadata: newMetadataRepositoryMock(),
     move: automock(MoveRepository, { strict: false }),
     notification: automock(NotificationRepository),
+    documentText: automock(DocumentTextRepository, { strict: false }),
     ocr: automock(OcrRepository, { strict: false }),
     oauth: automock(OAuthRepository, { args: [loggerMock] }),
     partner: automock(PartnerRepository, { strict: false }),
@@ -362,6 +365,7 @@ export const newTestService = <T extends BaseService>(
     overrides.cron || (mocks.cron as As<CronRepository>),
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
+    overrides.documentText || (mocks.documentText as As<DocumentTextRepository>),
     overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
     overrides.duplicateRepository || (mocks.duplicateRepository as As<DuplicateRepository>),
     overrides.email || (mocks.email as As<EmailRepository>),

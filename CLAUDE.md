@@ -9,6 +9,8 @@ This is a **Walmart fork** of Immich, a high-performance, self-hosted photo and 
 ### Fork Modifications
 - **Walmart branding**: Logo replaced with Walmart Spark
 - **Document support**: Added ability to upload, view, and search documents (PDF, TXT, EPUB, etc.)
+- **Comprehensive document search**: Full-text extraction from all document types, OCR for scanned PDFs, embedded image extraction and OCR from DOCX/PPTX/XLSX
+- **Priority queue processing**: Smaller documents processed first for faster user feedback
 - **ONLYOFFICE integration**: Native Office document viewing for DOCX, XLSX, PPTX (handles large files better than LibreOffice)
 
 ### Git Remote Setup

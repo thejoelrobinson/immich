@@ -1,29 +1,26 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import OnlyOfficeViewer from '$lib/components/asset-viewer/onlyoffice-viewer.svelte';
-  import { onlyOfficeManager } from '$lib/managers/onlyoffice-manager.svelte';
-  import { getAssetOriginalUrl, getDocumentPdfUrl } from '$lib/utils';
+  import PdfViewer from '$lib/components/asset-viewer/pdf-viewer.svelte';
+  import DocumentSearchNav from '$lib/components/asset-viewer/document-search-nav.svelte';
+  import { getAssetOriginalUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
+    searchTerm?: string;
     onPreviousAsset?: (() => void) | null;
     onNextAsset?: (() => void) | null;
   }
 
-  let { asset, onPreviousAsset = null, onNextAsset = null }: Props = $props();
+  let { asset, searchTerm = '', onPreviousAsset = null, onNextAsset = null }: Props = $props();
 
   let documentLoaded = $state(false);
   let documentError = $state(false);
   let iframeElement = $state<HTMLIFrameElement>();
-  let onlyOfficeEnabled = $state(false);
-  let onlyOfficeFailed = $state(false);
 
   const documentUrl = $derived(getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash }));
-  const pdfUrl = $derived(getDocumentPdfUrl({ id: asset.id, cacheKey: asset.thumbhash }));
 
   // Get the filename for extension checking (prefer originalPath, fallback to originalFileName)
   const filename = $derived((asset.originalPath || asset.originalFileName || '').toLowerCase());
@@ -31,21 +28,20 @@
   // Native PDF - render directly
   const isPdf = $derived(filename.endsWith('.pdf'));
 
-  // Office documents (including PowerPoint) - can use ONLYOFFICE or LibreOffice fallback
+  // Office documents - always converted to PDF via ONLYOFFICE upon upload
   const isOfficeDoc = $derived(
     ['.docx', '.doc', '.xlsx', '.xls', '.pptx', '.ppt', '.odt', '.ods', '.odp'].some((ext) => filename.endsWith(ext)),
   );
+
+  // Use PDF viewer for native PDFs and ALL Office documents
+  // Office docs are pre-converted to PDF via ONLYOFFICE during text extraction
+  // This enables consistent search highlighting across all document types
+  const usePdfViewer = $derived(isPdf || isOfficeDoc);
 
   // Text-based files - render directly in iframe
   const isText = $derived(
     ['.txt', '.md', '.csv', '.json', '.xml', '.html', '.htm', '.rtf'].some((ext) => filename.endsWith(ext)),
   );
-
-  // Use ONLYOFFICE for Office docs if enabled and not failed
-  const useOnlyOffice = $derived(isOfficeDoc && onlyOfficeEnabled && !onlyOfficeFailed);
-
-  // Use LibreOffice fallback for Office docs when ONLYOFFICE not available or failed
-  const useLibreOfficeFallback = $derived(isOfficeDoc && (!onlyOfficeEnabled || onlyOfficeFailed));
 
   const onLoad = () => {
     documentLoaded = true;
@@ -55,19 +51,6 @@
     documentError = true;
     documentLoaded = true;
   };
-
-  const onOnlyOfficeError = () => {
-    // ONLYOFFICE failed, fall back to LibreOffice PDF conversion
-    console.warn('ONLYOFFICE failed, falling back to LibreOffice PDF conversion');
-    onlyOfficeFailed = true;
-  };
-
-  onMount(() => {
-    // Initialize ONLYOFFICE manager asynchronously
-    onlyOfficeManager.init().then(() => {
-      onlyOfficeEnabled = onlyOfficeManager.isEnabled;
-    });
-  });
 
   // Handle iframe event listeners
   $effect(() => {
@@ -82,10 +65,9 @@
     }
   });
 
-  // Reset ONLYOFFICE failure state when asset changes
+  // Reset state when asset changes
   $effect(() => {
     const _id = asset.id;
-    onlyOfficeFailed = false;
     documentLoaded = false;
     documentError = false;
   });
@@ -100,6 +82,9 @@
 </script>
 
 <svelte:document onkeydown={handleKeydown} />
+
+<!-- Document search navigation bar -->
+<DocumentSearchNav />
 
 {#if documentError}
   <div class="h-full w-full flex flex-col">
@@ -116,35 +101,15 @@
 
     <!-- Content area -->
     <div class="flex-1 relative min-h-0">
-      {#if !documentLoaded}
+      {#if !documentLoaded && !usePdfViewer}
         <div id="spinner" class="absolute inset-0 flex items-center justify-center">
           <LoadingSpinner />
         </div>
       {/if}
 
-      {#if isPdf}
-        <!-- PDF viewer using native browser rendering -->
-        <iframe
-          bind:this={iframeElement}
-          src={documentUrl}
-          title={asset.originalFileName || $t('document')}
-          class="absolute inset-0 w-full h-full border-0"
-          class:opacity-0={!documentLoaded}
-          class:opacity-100={documentLoaded}
-        ></iframe>
-      {:else if useOnlyOffice}
-        <!-- Office documents via ONLYOFFICE (native rendering, no file size limit) -->
-        <OnlyOfficeViewer {asset} onError={onOnlyOfficeError} {onPreviousAsset} {onNextAsset} />
-      {:else if useLibreOfficeFallback}
-        <!-- Office documents fallback - server-side LibreOffice PDF conversion -->
-        <iframe
-          bind:this={iframeElement}
-          src={pdfUrl}
-          title={asset.originalFileName || $t('document')}
-          class="absolute inset-0 w-full h-full border-0"
-          class:opacity-0={!documentLoaded}
-          class:opacity-100={documentLoaded}
-        ></iframe>
+      {#if usePdfViewer}
+        <!-- PDF viewer using pdf.js for PDFs and Office docs (pre-converted to PDF) -->
+        <PdfViewer {asset} {searchTerm} {onPreviousAsset} {onNextAsset} />
       {:else if isText}
         <!-- Text file viewer using iframe -->
         <iframe

@@ -13,6 +13,7 @@
   import {
     mdiContentDuplicate,
     mdiFaceRecognition,
+    mdiFileDocument,
     mdiFileJpgBox,
     mdiFileXmlBox,
     mdiFolderMove,
@@ -135,6 +136,13 @@
       allText: $t('all'),
       missingText: $t('missing'),
       disabled: !featureFlags.ocr,
+    },
+    [QueueName.DocumentExtraction]: {
+      icon: mdiFileDocument,
+      title: $getQueueName(QueueName.DocumentExtraction),
+      subtitle: $t('admin.document_extraction_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
     },
     [QueueName.VideoConversion]: {
       icon: mdiVideo,

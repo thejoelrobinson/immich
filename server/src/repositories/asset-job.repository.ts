@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Asset, columns } from 'src/database';
@@ -377,7 +377,8 @@ export class AssetJobRepository {
   streamForDocumentTextExtractionJob(force?: boolean) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id'])
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['asset.id', 'asset_exif.fileSizeInByte'])
       .$if(!force, (qb) =>
         qb
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
@@ -386,6 +387,7 @@ export class AssetJobRepository {
       .where('asset.deletedAt', 'is', null)
       .where('asset.type', '=', AssetType.Document)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .orderBy(sql`COALESCE(asset_exif."fileSizeInByte", 9999999999)`, 'asc')
       .stream();
   }
 

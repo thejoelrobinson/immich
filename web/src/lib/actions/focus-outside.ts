@@ -15,7 +15,9 @@ export function focusOutside(node: HTMLElement, options: Options = {}) {
       onFocusOut &&
       (!event.relatedTarget || (event.relatedTarget instanceof Node && !node.contains(event.relatedTarget as Node)))
     ) {
-      onFocusOut(event);
+      // Defer state mutation to avoid Svelte 5 state_unsafe_mutation error
+      // when focusout fires during reactive update cycles
+      queueMicrotask(() => onFocusOut(event));
     }
   };
 

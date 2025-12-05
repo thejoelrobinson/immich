@@ -194,6 +194,10 @@ export interface IEntityJob extends IBaseJob {
   notify?: boolean;
 }
 
+export interface IEntityJobWithPriority extends IEntityJob {
+  priority?: number;
+}
+
 export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
@@ -397,7 +401,7 @@ export type JobItem =
 
   // Document Text Extraction
   | { name: JobName.DocumentTextExtractionQueueAll; data: IBaseJob }
-  | { name: JobName.DocumentTextExtraction; data: IEntityJob }
+  | { name: JobName.DocumentTextExtraction; data: IEntityJobWithPriority }
 
   // Workflow
   | { name: JobName.WorkflowRun; data: IWorkflowJob };

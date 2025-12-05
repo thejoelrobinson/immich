@@ -220,6 +220,9 @@ export class JobRepository {
       case JobName.FacialRecognitionQueueAll: {
         return { jobId: JobName.FacialRecognitionQueueAll };
       }
+      case JobName.DocumentTextExtraction: {
+        return { priority: item.data?.priority || 100 };
+      }
       default: {
         return null;
       }

@@ -4438,6 +4438,206 @@
         "x-immich-state": "Stable"
       }
     },
+    "/documents/{id}/pages": {
+      "get": {
+        "operationId": "getAllPages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PageTextPositionsResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/documents/{id}/pages/{pageNumber}/text-positions": {
+      "get": {
+        "operationId": "getPageTextPositions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "required": true,
+            "in": "path",
+            "description": "Page number (1-indexed)",
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageTextPositionsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/documents/{id}/search-matches": {
+      "get": {
+        "operationId": "getSearchMatches",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "Search term to find in document",
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentSearchMatchesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
     "/download/archive": {
       "post": {
         "description": "Download a ZIP archive containing the specified assets. The assets must have been previously requested via the \"getDownloadInfo\" endpoint.",
@@ -16149,6 +16349,64 @@
         ],
         "type": "object"
       },
+      "DocumentSearchMatchDto": {
+        "properties": {
+          "matchEnd": {
+            "description": "Character offset where match ends in page text",
+            "type": "integer"
+          },
+          "matchStart": {
+            "description": "Character offset where match starts in page text",
+            "type": "integer"
+          },
+          "pageNumber": {
+            "description": "Page number (1-indexed)",
+            "type": "integer"
+          },
+          "textSnippet": {
+            "description": "Text snippet with context around the match",
+            "type": "string"
+          }
+        },
+        "required": [
+          "matchEnd",
+          "matchStart",
+          "pageNumber",
+          "textSnippet"
+        ],
+        "type": "object"
+      },
+      "DocumentSearchMatchesResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "matches": {
+            "description": "List of matches",
+            "items": {
+              "$ref": "#/components/schemas/DocumentSearchMatchDto"
+            },
+            "type": "array"
+          },
+          "searchTerm": {
+            "description": "Search term used",
+            "type": "string"
+          },
+          "totalMatches": {
+            "description": "Total number of matches found",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assetId",
+          "matches",
+          "searchTerm",
+          "totalMatches"
+        ],
+        "type": "object"
+      },
       "DownloadArchiveInfo": {
         "properties": {
           "assetIds": {
@@ -17539,6 +17797,32 @@
           "fileType",
           "title",
           "token"
+        ],
+        "type": "object"
+      },
+      "PageTextPositionsResponseDto": {
+        "properties": {
+          "pageNumber": {
+            "description": "Page number (1-indexed)",
+            "type": "integer"
+          },
+          "text": {
+            "description": "Full text of the page",
+            "type": "string"
+          },
+          "textItems": {
+            "description": "Text items with positions",
+            "items": {
+              "$ref": "#/components/schemas/TextPositionDto"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "pageNumber",
+          "text",
+          "textItems"
         ],
         "type": "object"
       },
@@ -22116,6 +22400,42 @@
         },
         "required": [
           "messageId"
+        ],
+        "type": "object"
+      },
+      "TextPositionDto": {
+        "properties": {
+          "height": {
+            "description": "Normalized height (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "text": {
+            "description": "Text content",
+            "type": "string"
+          },
+          "width": {
+            "description": "Normalized width (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "x": {
+            "description": "Normalized x coordinate (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "y": {
+            "description": "Normalized y coordinate (0-1)",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "height",
+          "text",
+          "width",
+          "x",
+          "y"
         ],
         "type": "object"
       },

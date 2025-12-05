@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
@@ -7,7 +8,7 @@
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
   import AssetViewerNavBar from '$lib/components/asset-viewer/asset-viewer-nav-bar.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
-  import { AppRoute, AssetAction, ProjectionType } from '$lib/constants';
+  import { AppRoute, AssetAction, ProjectionType, QueryParameter } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -130,6 +131,35 @@
   const isDocumentAsset = $derived(
     asset.type === AssetTypeEnum.Document || isDocumentByExtension(asset.originalPath),
   );
+
+  // Get document search term from URL query parameter
+  // Priority: explicit docSearch param > extracted from search query param
+  const documentSearchTerm = $derived.by(() => {
+    // Check for explicit document search param first
+    const explicit = $page.url.searchParams.get(QueryParameter.DOCUMENT_SEARCH);
+    if (explicit) {
+      console.log('[AssetViewer] Found explicit docSearch param:', explicit);
+      return explicit;
+    }
+
+    // On search pages, extract search term from the query JSON
+    const queryParam = $page.url.searchParams.get(QueryParameter.QUERY);
+    if (queryParam) {
+      try {
+        const parsed = JSON.parse(queryParam);
+        // Use smart search query or OCR search term
+        const term = parsed.query || parsed.ocr || '';
+        console.log('[AssetViewer] Extracted search term from query:', term, 'parsed:', parsed);
+        return term;
+      } catch (e) {
+        console.log('[AssetViewer] Failed to parse query param:', e);
+        return '';
+      }
+    }
+
+    console.log('[AssetViewer] No search term found in URL');
+    return '';
+  });
 
   const setPlayOriginalVideo = (value: boolean) => {
     playOriginalVideo = value;
@@ -545,6 +575,7 @@
         {:else if isDocumentAsset}
           <DocumentViewer
             {asset}
+            searchTerm={documentSearchTerm}
             onPreviousAsset={() => navigateAsset('previous')}
             onNextAsset={() => navigateAsset('next')}
           />

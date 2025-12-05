@@ -531,10 +531,10 @@ export class MediaService extends BaseService {
     imageConfig: { preview: { size: number; format: ImageFormat; quality: number }; thumbnail: { size: number; format: ImageFormat; quality: number } },
   ): Promise<{ previewPath: string; thumbnailPath: string; thumbhash: Buffer; exifImageWidth: number; exifImageHeight: number } | null> {
     // Use pdftoppm (poppler-utils) to render the first page of the PDF
-    const { execFile } = await import('child_process');
-    const { promisify } = await import('util');
-    const fs = await import('fs/promises');
-    const path = await import('path');
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
     const execFileAsync = promisify(execFile);
 
     // Create a temp file for the rendered PDF page
@@ -566,7 +566,8 @@ export class MediaService extends BaseService {
 
       // Read the rendered image and get its dimensions
       const pdfImageBuffer = await fs.readFile(renderedPath);
-      const sharp = (await import('sharp')).default;
+      const sharpModule = await import('sharp');
+      const sharp = sharpModule.default;
       const metadata = await sharp(pdfImageBuffer).metadata();
       const originalWidth = metadata.width || 1;
       const originalHeight = metadata.height || 1;
@@ -670,15 +671,15 @@ export class MediaService extends BaseService {
     imageConfig: { preview: { size: number; format: ImageFormat; quality: number }; thumbnail: { size: number; format: ImageFormat; quality: number } },
   ): Promise<{ previewPath: string; thumbnailPath: string; thumbhash: Buffer; exifImageWidth: number; exifImageHeight: number } | null> {
     // Use LibreOffice to convert Office document to PDF, then render first page
-    const { execFile } = await import('child_process');
-    const { promisify } = await import('util');
-    const fs = await import('fs/promises');
-    const path = await import('path');
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
     const execFileAsync = promisify(execFile);
 
     // Create temp directory for LibreOffice output
     const tempDir = path.dirname(previewPath);
-    const tempPdfBasename = `office-convert-${asset.id}`;
+    const _tempPdfBasename = `office-convert-${asset.id}`;
     const sourceBasename = path.basename(asset.originalPath, path.extname(asset.originalPath));
 
     try {
@@ -709,7 +710,7 @@ export class MediaService extends BaseService {
         '--outdir', tempDir,
         asset.originalPath,
       ], {
-        timeout: 60000, // 60 second timeout
+        timeout: 60_000, // 60 second timeout
         env: {
           ...process.env,
           LD_PRELOAD: harfbuzzPath,

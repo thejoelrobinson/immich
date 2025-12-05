@@ -266,6 +266,8 @@
     "oauth_timeout": "Request Timeout",
     "oauth_timeout_description": "Timeout for requests in milliseconds",
     "ocr_job_description": "Use machine learning to recognize text in images",
+    "document_extraction_job": "Document Extraction",
+    "document_extraction_job_description": "Extract text from documents (PDF, Word, PowerPoint, Excel, OpenDocument) for search",
     "password_enable_description": "Login with email and password",
     "password_settings": "Password Login",
     "password_settings_description": "Manage password login settings",

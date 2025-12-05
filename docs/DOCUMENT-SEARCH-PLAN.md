@@ -1,252 +1,377 @@
-# Document Search Implementation Plan
+# Comprehensive Document Search Implementation Plan
+
+**Status: IMPLEMENTED** (December 2024)
+
+See `DOCUMENT-SUPPORT.md` for full documentation of the implementation.
+
+---
 
 ## Executive Summary
 
-This plan addresses making all document content fully searchable in Immich. The existing infrastructure provides excellent foundations - documents already have thumbnails, CLIP encoding should work for documents with previews, and the OCR/search systems are mature.
+This plan makes **ALL content** from **ALL pages** of every document fully searchable in Immich. This includes:
+- Text extracted from document structure
+- Text from OCR on every page (for scanned documents)
+- Text from embedded images within documents (screenshots, diagrams, etc.)
+- CLIP embeddings for semantic/visual search
 
-**Main Gaps to Address:**
-1. Scanned PDFs don't get OCR'd (pdf-parse only extracts embedded text)
-2. Need to verify documents are included in CLIP encoding pipeline
-3. Images embedded in documents (DOCX/PPTX) aren't extracted
-
----
-
-## Current Architecture Analysis
-
-### What Already Works
-
-| Feature | Status | Implementation |
-|---------|--------|----------------|
-| Document Classification | Working | `AssetType.Document` in `mime-types.ts` |
-| Document Text Extraction | Working | `DocumentService` with pdf-parse, mammoth, officeparser |
-| Document Thumbnails | Working | `MediaService.generateDocumentThumbnails()` |
-| OCR for Images | Working | ML service + PaddleOCR + `ocr_search` table |
-| Text Search | Working | `searchAssetBuilder()` queries `ocr_search` via `%>>` trigram |
-| CLIP/Smart Search | Working | `smart_search` table with HNSW vector index |
-
-### Identified Gaps
-
-| Gap | Description | Impact |
-|-----|-------------|--------|
-| **Scanned PDFs** | pdf-parse returns empty string for image-based PDFs | Scanned documents unsearchable |
-| **CLIP for Documents** | Need to verify documents get CLIP encoded | May miss semantic search |
-| **Embedded Images** | Images in DOCX/PPTX not extracted | Content in embedded images unsearchable |
+**Key Design Decisions:**
+- **No page limits** - Process every page of every document
+- **Prioritize smaller documents** - Faster results for quick documents
+- **Extract ALL embedded images** - From PDFs, DOCX, PPTX, XLSX
+- **OCR everything** - Pages AND embedded images
 
 ---
 
-## Phase 1: OCR for Scanned PDFs
+## Architecture Overview
 
-**Goal**: Detect when pdf-parse returns little/no text and fall back to page-by-page OCR.
+```
+Document Upload
+       │
+       ▼
+┌──────────────────────────────────────────────────────────────┐
+│                    Document Processing Job                    │
+│  (Prioritized by file size - smaller documents processed first)│
+└──────────────────────────────────────────────────────────────┘
+       │
+       ├─────────────────────────────────────────┐
+       │                                         │
+       ▼                                         ▼
+┌─────────────────────┐                ┌─────────────────────┐
+│   Text Extraction   │                │   Image Extraction  │
+│  (Structural Text)  │                │   (All Pages/Images)│
+└─────────────────────┘                └─────────────────────┘
+       │                                         │
+       │  PDF: pdf-parse                         │  PDF: pdftoppm (all pages)
+       │  DOCX: mammoth                          │  PDF: pdf-lib (embedded images)
+       │  Office: officeparser                   │  Office: JSZip (word/ppt/xl/media/)
+       │  EPUB: epub2                            │
+       │                                         │
+       ▼                                         ▼
+┌─────────────────────┐                ┌─────────────────────┐
+│   Structural Text   │                │   ML OCR Service    │
+│                     │                │  (PaddleOCR)        │
+└─────────────────────┘                └─────────────────────┘
+       │                                         │
+       │                                         │
+       └──────────────┬──────────────────────────┘
+                      │
+                      ▼
+              ┌───────────────┐
+              │  ocr_search   │  (Combined searchable text)
+              │    table      │
+              └───────────────┘
+                      │
+                      ▼
+              ┌───────────────┐
+              │  smart_search │  (CLIP embeddings for semantic search)
+              │    table      │
+              └───────────────┘
+```
 
-### 1.1 Modify DocumentService to Detect Scanned PDFs
+---
 
-**File**: `server/src/services/document.service.ts`
+## Phase 1: Job Queue Priority System
 
-**Changes**:
+**Goal**: Process smaller documents first for faster user feedback.
+
+### 1.1 Modify Streaming Query to Order by File Size
+
+**File**: `server/src/repositories/asset-job.repository.ts`
+
+**Current Code** (lines 377-389):
 ```typescript
-private async extractTextFromPdf(filePath: string): Promise<string> {
-  const buffer = await fs.promises.readFile(filePath);
-  const data = await pdfParse(buffer);
-
-  const charsPerPage = data.text.length / Math.max(data.numpages, 1);
-
-  // If less than 50 chars per page, assume scanned PDF
-  if (charsPerPage < 50 && data.numpages > 0) {
-    this.logger.log(`Scanned PDF detected (${charsPerPage.toFixed(0)} chars/page), running OCR`);
-    return this.extractTextFromScannedPdf(filePath, data.numpages);
-  }
-
-  return data.text;
+streamForDocumentTextExtractionJob(force?: boolean) {
+  return this.db
+    .selectFrom('asset')
+    .select(['asset.id'])
+    // ... filters
+    .stream();
 }
 ```
 
-### 1.2 Add Scanned PDF OCR Method
+**New Code**:
+```typescript
+@GenerateSql({ params: [], stream: true })
+streamForDocumentTextExtractionJob(force?: boolean) {
+  return this.db
+    .selectFrom('asset')
+    .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+    .select(['asset.id', 'asset_exif.fileSizeInByte'])
+    .$if(!force, (qb) =>
+      qb
+        .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+        .where('asset_job_status.documentTextExtractedAt', 'is', null),
+    )
+    .where('asset.deletedAt', 'is', null)
+    .where('asset.type', '=', AssetType.Document)
+    .where('asset.visibility', '!=', AssetVisibility.Hidden)
+    .orderBy(sql`COALESCE(asset_exif."fileSizeInByte", 9999999999)`, 'asc')  // Smallest first, nulls last
+    .stream();
+}
+```
+
+### 1.2 Add BullMQ Priority Based on File Size
 
 **File**: `server/src/services/document.service.ts`
 
-**New Method**:
+**New Queue Handler**:
 ```typescript
-private async extractTextFromScannedPdf(filePath: string, pageCount: number): Promise<string> {
+@OnJob({ name: JobName.DocumentTextExtractionQueueAll, queue: QueueName.DocumentExtraction })
+async handleQueueDocumentTextExtraction({ force }: JobOf<JobName.DocumentTextExtractionQueueAll>): Promise<JobStatus> {
+  let jobs: JobItem[] = [];
+  const assets = this.assetJobRepository.streamForDocumentTextExtractionJob(force);
+
+  for await (const asset of assets) {
+    // Calculate priority: smaller files = lower number = higher priority
+    const fileSizeMB = asset.fileSizeInByte
+      ? Number(asset.fileSizeInByte) / (1024 * 1024)
+      : 999;
+
+    // Priority mapping: 0-1MB=1, 1-10MB=10, 10-50MB=50, 50-100MB=100, 100MB+=200
+    let priority = 200;
+    if (fileSizeMB < 1) priority = 1;
+    else if (fileSizeMB < 10) priority = 10;
+    else if (fileSizeMB < 50) priority = 50;
+    else if (fileSizeMB < 100) priority = 100;
+
+    jobs.push({
+      name: JobName.DocumentTextExtraction,
+      data: { id: asset.id, priority }
+    });
+
+    if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    }
+  }
+
+  await this.jobRepository.queueAll(jobs);
+  return JobStatus.Success;
+}
+```
+
+### 1.3 Register Priority in Job Repository
+
+**File**: `server/src/repositories/job.repository.ts`
+
+**Add to `getJobOptions()`**:
+```typescript
+private getJobOptions(item: JobItem): JobsOptions | null {
+  switch (item.name) {
+    case JobName.DocumentTextExtraction: {
+      return { priority: item.data?.priority || 100 };
+    }
+    // ... existing cases
+  }
+}
+```
+
+---
+
+## Phase 2: Comprehensive PDF Processing
+
+**Goal**: Extract ALL text from ALL pages, including scanned PDFs and embedded images.
+
+### 2.1 PDF Processing Flow
+
+```
+PDF Document
+     │
+     ├── Text-based PDF ──────────► pdf-parse (fast)
+     │   (chars/page > 50)
+     │
+     ├── Scanned PDF ─────────────► pdftoppm (all pages) ──► OCR each page
+     │   (chars/page < 50)
+     │
+     └── Embedded Images ─────────► pdf-lib extract ──► OCR each image
+```
+
+### 2.2 Detect PDF Type and Extract Text
+
+**File**: `server/src/services/document.service.ts`
+
+```typescript
+private async extractTextFromPdf(filePath: string): Promise<string> {
+  const buffer = await fs.readFile(filePath);
+  const pdfData = await pdfParse(buffer);
+
+  const pageCount = pdfData.numpages || 1;
+  const charsPerPage = pdfData.text.length / pageCount;
+
+  const results: string[] = [];
+
+  // 1. Get structural text (if available)
+  if (pdfData.text && pdfData.text.trim().length > 0) {
+    results.push(pdfData.text);
+  }
+
+  // 2. If scanned PDF (low text density), OCR all pages
+  if (charsPerPage < 50) {
+    this.logger.log(`Scanned PDF detected (${charsPerPage.toFixed(0)} chars/page), running OCR on ${pageCount} pages`);
+    const ocrText = await this.ocrAllPdfPages(filePath, pageCount);
+    if (ocrText) {
+      results.push('\n[OCR from pages]\n' + ocrText);
+    }
+  }
+
+  // 3. Extract and OCR embedded images from PDF
+  const embeddedImageText = await this.extractAndOcrPdfEmbeddedImages(filePath);
+  if (embeddedImageText) {
+    results.push('\n[Embedded images]\n' + embeddedImageText);
+  }
+
+  return results.join('\n\n');
+}
+```
+
+### 2.3 OCR All PDF Pages (No Limit)
+
+**File**: `server/src/services/document.service.ts`
+
+```typescript
+private async ocrAllPdfPages(filePath: string, pageCount: number): Promise<string> {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-pdf-ocr-'));
   const pageTexts: string[] = [];
 
   try {
-    // Limit pages to prevent excessive processing
-    const maxPages = Math.min(pageCount, 100);
+    const outputBase = path.join(tempDir, 'page');
 
-    for (let page = 1; page <= maxPages; page++) {
-      // Convert page to PNG using pdftoppm (already installed)
-      const outputBase = path.join(tempDir, `page-${page}`);
-      await this.convertPdfPageToImage(filePath, outputBase, page);
+    // Render ALL pages to PNG using pdftoppm
+    await execFileAsync('/usr/bin/pdftoppm', [
+      '-png',
+      '-r', '150',  // 150 DPI for good OCR quality
+      filePath,
+      outputBase
+    ], {
+      timeout: Math.max(60000, pageCount * 3000)  // 3 seconds per page minimum
+    });
 
-      const imagePath = `${outputBase}.png`;
+    // OCR each page
+    for (let page = 1; page <= pageCount; page++) {
+      // pdftoppm uses different naming based on page count
+      const pageNumStr = pageCount > 9
+        ? page.toString().padStart(Math.ceil(Math.log10(pageCount + 1)), '0')
+        : page.toString();
+      const imagePath = `${outputBase}-${pageNumStr}.png`;
+
       if (await this.fileExists(imagePath)) {
-        // Call ML OCR service
-        const ocrResult = await this.machineLearningRepository.ocr(imagePath, this.ocrConfig);
-        pageTexts.push(ocrResult.text.join(' '));
+        try {
+          const { machineLearning } = await this.configRepository.getConfig({ withCache: true });
+          const ocrResult = await this.machineLearningRepository.ocr(
+            imagePath,
+            machineLearning.ocr
+          );
 
-        // Clean up page image
-        await fs.unlink(imagePath);
+          if (ocrResult.text && ocrResult.text.length > 0) {
+            pageTexts.push(`[Page ${page}]\n${ocrResult.text.join(' ')}`);
+          }
+        } catch (error) {
+          this.logger.warn(`Failed to OCR page ${page}: ${error}`);
+        }
+
+        // Clean up page image immediately to save disk space
+        await fs.unlink(imagePath).catch(() => {});
       }
     }
 
-    return pageTexts.join('\n\n--- Page Break ---\n\n');
+    return pageTexts.join('\n\n');
   } finally {
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
-}
-
-private async convertPdfPageToImage(
-  pdfPath: string,
-  outputBase: string,
-  page: number
-): Promise<void> {
-  const args = [
-    '-f', String(page),  // First page
-    '-l', String(page),  // Last page (same = single page)
-    '-png',
-    '-r', '150',         // 150 DPI (balance quality/size)
-    '-singlefile',
-    pdfPath,
-    outputBase
-  ];
-
-  await execFile('pdftoppm', args);
 }
 ```
 
-### 1.3 Add Dependencies Injection
+### 2.4 Extract Embedded Images from PDF
 
 **File**: `server/src/services/document.service.ts`
 
-**Add to constructor**:
+**Add dependency**: `pnpm add pdf-lib`
+
 ```typescript
-constructor(
-  // ... existing
-  @Inject(IMachineLearningRepository)
-  private machineLearningRepository: IMachineLearningRepository,
-  @Inject(IConfigRepository)
-  private configRepository: IConfigRepository,
-) {}
-```
+import { PDFDocument } from 'pdf-lib';
 
-### 1.4 Files to Modify
+private async extractAndOcrPdfEmbeddedImages(filePath: string): Promise<string> {
+  const texts: string[] = [];
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-pdf-img-'));
 
-| File | Changes |
-|------|---------|
-| `server/src/services/document.service.ts` | Add scanned PDF detection and OCR |
-| `server/src/services/index.ts` | Add ML repository to DocumentService deps |
+  try {
+    const buffer = await fs.readFile(filePath);
+    const pdfDoc = await PDFDocument.load(buffer);
+    const pages = pdfDoc.getPages();
 
----
+    let imageIndex = 0;
 
-## Phase 2: Verify CLIP Embeddings for Documents
+    for (let pageNum = 0; pageNum < pages.length; pageNum++) {
+      const page = pages[pageNum];
 
-**Goal**: Confirm documents with thumbnails get CLIP encoded for semantic search.
+      // Get XObject resources (contains images)
+      const resources = page.node.Resources();
+      if (!resources) continue;
 
-### 2.1 Investigation: Current Behavior
+      const xObjects = resources.lookup(PDFName.of('XObject'));
+      if (!xObjects || !(xObjects instanceof PDFDict)) continue;
 
-**File**: `server/src/repositories/asset-job.repository.ts`
+      const entries = xObjects.entries();
 
-The `streamForEncodeClip()` method uses `assetsWithPreviews()` which:
-- Joins on `asset_job_status.previewAt IS NOT NULL`
-- Does NOT filter by asset type
-- **Documents should already be included if they have previews**
+      for (const [name, ref] of entries) {
+        try {
+          const xObject = xObjects.lookup(name);
+          if (!xObject) continue;
 
-### 2.2 Verification Steps
+          // Check if it's an image
+          const subtype = xObject.get(PDFName.of('Subtype'));
+          if (!subtype || subtype.toString() !== '/Image') continue;
 
-1. Add temporary logging to `SmartInfoService.handleEncodeClip()`:
-```typescript
-async handleEncodeClip({ id }: JobOf<JobName.EncodeClip>): Promise<JobStatus> {
-  const asset = await this.assetJobRepository.getForEncodeClip(id);
-  this.logger.debug(`CLIP encoding asset type=${asset.type}, id=${id}`);
-  // ... rest of method
-}
-```
+          // Extract image data
+          const imageData = await this.extractPdfImage(xObject);
+          if (!imageData) continue;
 
-2. Upload a document, check logs for CLIP encoding
-3. Query `smart_search` table for document IDs
+          // Save to temp file
+          const imagePath = path.join(tempDir, `image-${imageIndex++}.png`);
+          await fs.writeFile(imagePath, imageData);
 
-### 2.3 Fix if Needed
+          // OCR the image
+          const { machineLearning } = await this.configRepository.getConfig({ withCache: true });
+          const ocrResult = await this.machineLearningRepository.ocr(
+            imagePath,
+            machineLearning.ocr
+          );
 
-If documents are NOT getting CLIP encoded, check:
-1. Document thumbnail job sets `previewAt`
-2. Document preview files exist in `asset_file` table
-3. No type filtering in CLIP job query
+          if (ocrResult.text && ocrResult.text.length > 0) {
+            texts.push(`[Image ${imageIndex} on page ${pageNum + 1}]\n${ocrResult.text.join(' ')}`);
+          }
 
----
+          // Clean up immediately
+          await fs.unlink(imagePath).catch(() => {});
+        } catch (error) {
+          this.logger.debug(`Failed to extract PDF image: ${error}`);
+        }
+      }
+    }
 
-## Phase 3: Enable OCR for Document Preview Images
-
-**Goal**: Run OCR on document thumbnail images to catch visible text.
-
-### 3.1 Verify Current Behavior
-
-**File**: `server/src/repositories/asset-job.repository.ts`
-
-`streamForOcrJob()` at line 361-374:
-- Filters by `deletedAt`, `ocrAt`, `visibility`
-- Does NOT filter by asset type
-- **Documents should already be OCR'd**
-
-### 3.2 Merge Document Text + OCR Results
-
-**Challenge**: A document may have:
-1. Extracted structural text (from pdf-parse/mammoth)
-2. OCR text (from preview thumbnail)
-
-**Solution**: Combine both in `ocr_search` table.
-
-**File**: `server/src/services/document.service.ts`
-
-**Modify `handleDocumentTextExtraction()`**:
-```typescript
-async handleDocumentTextExtraction({ id }: JobOf<JobName.DocumentTextExtraction>) {
-  const asset = await this.assetJobRepository.getForDocumentTextExtraction(id);
-
-  // Get structural text
-  const extractedText = await this.extractTextFromDocument(
-    asset.originalPath,
-    asset.originalFileName
-  );
-
-  // Check if OCR already ran (from preview thumbnail)
-  const existingOcr = await this.ocrRepository.getByAssetId(id);
-
-  // Combine texts (deduplicate if needed)
-  let finalText = extractedText || '';
-  if (existingOcr?.text && existingOcr.text !== extractedText) {
-    finalText = `${finalText}\n\n[OCR from preview]\n${existingOcr.text}`;
+    return texts.join('\n\n');
+  } catch (error) {
+    this.logger.warn(`Failed to extract embedded images from PDF: ${error}`);
+    return '';
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
-
-  // Store combined text
-  await this.ocrRepository.upsert(id, [{
-    assetId: id,
-    x1: 0, y1: 0, x2: 1, y2: 1,
-    x3: 1, y3: 1, x4: 0, y4: 1,
-    boxScore: 1, textScore: 1,
-    text: finalText,
-  }]);
-
-  await this.assetRepository.upsertJobStatus({
-    assetId: id,
-    documentTextExtractedAt: new Date()
-  });
 }
 ```
 
 ---
 
-## Phase 4: Extract Images from Documents (Optional Enhancement)
+## Phase 3: Office Document Image Extraction
 
-**Goal**: Extract embedded images from DOCX/PPTX and OCR them.
+**Goal**: Extract ALL embedded images from DOCX, PPTX, XLSX and OCR them.
 
-### 4.1 Add jszip Dependency
+### 3.1 Add JSZip Dependency
 
 ```bash
 cd server && pnpm add jszip
 ```
 
-### 4.2 Implement Image Extraction
+### 3.2 Extract Images from Office Documents
 
 **File**: `server/src/services/document.service.ts`
 
@@ -255,178 +380,411 @@ import JSZip from 'jszip';
 
 private async extractImagesFromOfficeDoc(filePath: string): Promise<Buffer[]> {
   const images: Buffer[] = [];
-  const buffer = await fs.promises.readFile(filePath);
-  const zip = await JSZip.loadAsync(buffer);
 
-  // Office docs store images in word/media/ or ppt/media/
-  const mediaPaths = ['word/media/', 'ppt/media/', 'xl/media/'];
+  try {
+    const buffer = await fs.readFile(filePath);
+    const zip = await JSZip.loadAsync(buffer);
 
-  for (const [relativePath, file] of Object.entries(zip.files)) {
-    if (file.dir) continue;
+    // Office documents store images in these paths
+    const mediaPaths = [
+      'word/media/',      // DOCX
+      'ppt/media/',       // PPTX
+      'xl/media/',        // XLSX
+    ];
 
-    const isMedia = mediaPaths.some(p => relativePath.startsWith(p));
-    const isImage = /\.(png|jpg|jpeg|gif|bmp|tiff)$/i.test(relativePath);
+    for (const [relativePath, file] of Object.entries(zip.files)) {
+      if (file.dir) continue;
 
-    if (isMedia && isImage) {
-      const imageBuffer = await file.async('nodebuffer');
-      images.push(imageBuffer);
-    }
-  }
+      const isMedia = mediaPaths.some(p => relativePath.startsWith(p));
 
-  return images;
-}
+      // Extract standard image formats (skip EMF/WMF vector graphics for now)
+      const isStandardImage = /\.(png|jpg|jpeg|gif|bmp|tiff|webp)$/i.test(relativePath);
 
-private async ocrEmbeddedImages(images: Buffer[]): Promise<string> {
-  const texts: string[] = [];
-
-  for (const imageBuffer of images) {
-    // Write to temp file for ML service
-    const tempPath = path.join(os.tmpdir(), `embed-${Date.now()}.png`);
-    await fs.promises.writeFile(tempPath, imageBuffer);
-
-    try {
-      const result = await this.machineLearningRepository.ocr(tempPath, this.ocrConfig);
-      if (result.text.length > 0) {
-        texts.push(result.text.join(' '));
+      if (isMedia && isStandardImage) {
+        try {
+          const imageBuffer = await file.async('nodebuffer');
+          images.push(imageBuffer);
+        } catch (error) {
+          this.logger.debug(`Failed to extract image ${relativePath}: ${error}`);
+        }
       }
-    } finally {
-      await fs.unlink(tempPath).catch(() => {});
     }
-  }
 
-  return texts.join('\n\n');
+    this.logger.debug(`Extracted ${images.length} images from Office document`);
+    return images;
+  } catch (error) {
+    this.logger.warn(`Failed to extract images from Office document: ${error}`);
+    return [];
+  }
 }
 ```
 
-### 4.3 Integrate into Text Extraction
+### 3.3 OCR Extracted Images
+
+**File**: `server/src/services/document.service.ts`
+
+```typescript
+private async ocrImageBuffers(images: Buffer[]): Promise<string> {
+  if (images.length === 0) return '';
+
+  const texts: string[] = [];
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immich-office-img-'));
+
+  try {
+    const { machineLearning } = await this.configRepository.getConfig({ withCache: true });
+
+    for (let i = 0; i < images.length; i++) {
+      const imagePath = path.join(tempDir, `image-${i}.png`);
+
+      try {
+        await fs.writeFile(imagePath, images[i]);
+
+        const ocrResult = await this.machineLearningRepository.ocr(
+          imagePath,
+          machineLearning.ocr
+        );
+
+        if (ocrResult.text && ocrResult.text.length > 0) {
+          texts.push(`[Embedded image ${i + 1}]\n${ocrResult.text.join(' ')}`);
+        }
+      } catch (error) {
+        this.logger.debug(`Failed to OCR embedded image ${i}: ${error}`);
+      } finally {
+        await fs.unlink(imagePath).catch(() => {});
+      }
+    }
+
+    return texts.join('\n\n');
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+  }
+}
+```
+
+### 3.4 Integrate into Office Document Processing
+
+**File**: `server/src/services/document.service.ts`
 
 ```typescript
 private async extractTextFromOfficeDocument(
   filePath: string,
   extension: string
 ): Promise<string> {
-  // Get structural text
-  const structuralText = await this.parseOfficeText(filePath, extension);
+  const results: string[] = [];
 
-  // Extract and OCR embedded images (if enabled)
-  if (this.config.documentSearch.extractEmbeddedImages) {
-    const images = await this.extractImagesFromOfficeDoc(filePath);
-    if (images.length > 0) {
-      const imageText = await this.ocrEmbeddedImages(images);
-      return `${structuralText}\n\n[Embedded Images]\n${imageText}`;
+  // 1. Get structural text using existing parsers
+  if (extension === '.docx') {
+    const mammoth = require('mammoth');
+    const result = await mammoth.extractRawText({ path: filePath });
+    if (result.value) {
+      results.push(result.value);
+    }
+  } else {
+    // Use officeparser for other Office formats
+    const officeParser = require('officeparser');
+    const text = await new Promise<string>((resolve, reject) => {
+      officeParser.parseOffice(filePath, (data: string, err: Error | null) => {
+        if (err) reject(err);
+        else resolve(data || '');
+      });
+    });
+    if (text) {
+      results.push(text);
     }
   }
 
-  return structuralText;
+  // 2. Extract and OCR all embedded images
+  const images = await this.extractImagesFromOfficeDoc(filePath);
+  if (images.length > 0) {
+    const imageText = await this.ocrImageBuffers(images);
+    if (imageText) {
+      results.push('\n[Embedded images]\n' + imageText);
+    }
+  }
+
+  return results.join('\n\n');
 }
 ```
 
 ---
 
-## Phase 5: Configuration
+## Phase 4: CLIP Embeddings for Documents
 
-**File**: `server/src/config.ts` or system config
+**Goal**: Enable semantic/visual search for documents.
+
+### 4.1 Verify Documents Get CLIP Encoded
+
+The existing `SmartInfoService.handleEncodeClip()` should already process documents with preview files. Verification needed:
+
+**File**: `server/src/services/smart-info.service.ts`
+
+**Add logging** (temporary for verification):
+```typescript
+@OnJob({ name: JobName.EncodeClip, queue: QueueName.SmartSearch })
+async handleEncodeClip({ id }: JobOf<JobName.EncodeClip>): Promise<JobStatus> {
+  const asset = await this.assetJobRepository.getForEncodeClip(id);
+
+  this.logger.debug(`CLIP encoding asset: type=${asset.type}, id=${id}, hasPreview=${!!asset.previewFile}`);
+
+  // ... rest of method
+}
+```
+
+### 4.2 Ensure Document Thumbnails Trigger CLIP
+
+**File**: `server/src/services/media.service.ts`
+
+After thumbnail generation, ensure `previewAt` is set in `asset_job_status` table (this should already happen).
+
+---
+
+## Phase 5: Main Job Handler Integration
+
+**Goal**: Unified document processing that extracts all text sources.
+
+### 5.1 Complete Document Text Extraction Handler
+
+**File**: `server/src/services/document.service.ts`
 
 ```typescript
-documentSearch: {
-  ocrScannedPdfs: true,          // Enable OCR for scanned PDFs
-  ocrThresholdCharsPerPage: 50,  // Chars/page threshold for "scanned" detection
-  maxPdfPagesForOcr: 100,        // Limit pages to OCR for performance
-  extractEmbeddedImages: false,  // OCR images in DOCX/PPTX (performance impact)
+@OnJob({ name: JobName.DocumentTextExtraction, queue: QueueName.DocumentExtraction })
+async handleDocumentTextExtraction({ id }: JobOf<JobName.DocumentTextExtraction>): Promise<JobStatus> {
+  const asset = await this.assetJobRepository.getForDocumentTextExtraction(id);
+  if (!asset) {
+    return JobStatus.Failed;
+  }
+
+  const extension = path.extname(asset.originalFileName).toLowerCase();
+  let allText = '';
+
+  try {
+    this.logger.log(`Processing document: ${asset.originalFileName} (${extension})`);
+
+    // Route to appropriate extractor based on file type
+    switch (extension) {
+      case '.pdf':
+        allText = await this.extractTextFromPdf(asset.originalPath);
+        break;
+
+      case '.docx':
+      case '.doc':
+      case '.pptx':
+      case '.ppt':
+      case '.xlsx':
+      case '.xls':
+      case '.odt':
+      case '.odp':
+      case '.ods':
+        allText = await this.extractTextFromOfficeDocument(asset.originalPath, extension);
+        break;
+
+      case '.epub':
+        allText = await this.extractTextFromEpub(asset.originalPath);
+        break;
+
+      case '.txt':
+      case '.md':
+      case '.csv':
+      case '.json':
+      case '.xml':
+      case '.html':
+      case '.htm':
+        allText = await fs.readFile(asset.originalPath, 'utf-8');
+        break;
+
+      case '.rtf':
+        allText = await this.extractTextFromRtf(asset.originalPath);
+        break;
+
+      default:
+        this.logger.warn(`Unsupported document type: ${extension}`);
+    }
+
+    // Store extracted text for search
+    if (allText && allText.trim().length > 0) {
+      await this.ocrRepository.upsert(id, [{
+        assetId: id,
+        x1: 0, y1: 0, x2: 1, y2: 1,
+        x3: 1, y3: 1, x4: 0, y4: 1,
+        boxScore: 1,
+        textScore: 1,
+        text: allText.trim(),
+      }]);
+
+      this.logger.log(`Extracted ${allText.length} characters from ${asset.originalFileName}`);
+    }
+
+    // Mark job complete
+    await this.assetRepository.upsertJobStatus({
+      assetId: id,
+      documentTextExtractedAt: new Date(),
+    });
+
+    return JobStatus.Success;
+  } catch (error) {
+    this.logger.error(`Failed to process document ${id}: ${error}`);
+    return JobStatus.Failed;
+  }
 }
 ```
 
 ---
 
-## Implementation Priority
+## Phase 6: Dependencies and Configuration
 
-| Phase | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| Phase 1: Scanned PDF OCR | **High** | Medium | High - Makes scanned docs searchable |
-| Phase 2: CLIP Verification | **High** | Low | High - Enables semantic search |
-| Phase 3: OCR Merge | Medium | Low | Medium - Combines text sources |
-| Phase 4: Embedded Images | Low | Medium | Low - Edge case improvement |
-| Phase 5: Config | Medium | Low | Medium - User control |
+### 6.1 New Dependencies
+
+**File**: `server/package.json`
+
+```bash
+cd server
+pnpm add jszip pdf-lib
+```
+
+### 6.2 Service Dependencies Injection
+
+**File**: `server/src/services/document.service.ts`
+
+```typescript
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  IAssetRepository,
+  IAssetJobRepository,
+  IConfigRepository,
+  IJobRepository,
+  IMachineLearningRepository,
+  IOcrRepository,
+} from '@app/domain';
+
+@Injectable()
+export class DocumentService {
+  private readonly logger = new Logger(DocumentService.name);
+
+  constructor(
+    @Inject(IAssetRepository)
+    private assetRepository: IAssetRepository,
+
+    @Inject(IAssetJobRepository)
+    private assetJobRepository: IAssetJobRepository,
+
+    @Inject(IConfigRepository)
+    private configRepository: IConfigRepository,
+
+    @Inject(IJobRepository)
+    private jobRepository: IJobRepository,
+
+    @Inject(IMachineLearningRepository)
+    private machineLearningRepository: IMachineLearningRepository,
+
+    @Inject(IOcrRepository)
+    private ocrRepository: IOcrRepository,
+  ) {}
+
+  // ... methods
+}
+```
+
+### 6.3 Update Service Index
+
+**File**: `server/src/services/index.ts`
+
+Ensure `DocumentService` has access to all required repositories.
 
 ---
 
-## Files Summary
+## Files to Modify Summary
 
-### Must Modify
-
-| File | Purpose |
+| File | Changes |
 |------|---------|
-| `server/src/services/document.service.ts` | Core scanned PDF OCR logic |
-| `server/src/services/index.ts` | Add ML repository dependency |
+| `server/src/services/document.service.ts` | Complete rewrite with PDF OCR, Office image extraction |
+| `server/src/repositories/asset-job.repository.ts` | Add file size ordering to streaming query |
+| `server/src/repositories/job.repository.ts` | Add priority support for DocumentTextExtraction |
+| `server/src/services/index.ts` | Update DocumentService dependencies |
+| `server/package.json` | Add jszip, pdf-lib dependencies |
 
-### May Need to Modify
-
-| File | Purpose |
-|------|---------|
-| `server/src/services/smart-info.service.ts` | Verify/fix CLIP for documents |
-| `server/src/repositories/ocr.repository.ts` | Add `getByAssetId` if missing |
-
-### New Dependencies
+## New Dependencies
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| jszip | ^3.10.1 | Office document image extraction (Phase 4 only) |
+| `jszip` | ^3.10.1 | Extract images from DOCX/PPTX/XLSX |
+| `pdf-lib` | ^1.17.1 | Extract embedded images from PDF |
+
+## No Database Changes Required
+
+All data stored in existing tables:
+- `ocr_search` - Combined searchable text (GIN trigram index)
+- `smart_search` - CLIP embeddings (HNSW vector index)
+- `asset_job_status` - Job tracking
 
 ---
 
-## Database Changes
+## Processing Summary by Document Type
 
-**None required** - Existing schema supports all features:
-- `ocr_search` - Text storage with GIN trigram index
-- `smart_search` - CLIP embeddings with HNSW vector index
-- `asset_job_status` - Job tracking with `documentTextExtractedAt`
+| Type | Structural Text | Page OCR | Embedded Image OCR | CLIP |
+|------|-----------------|----------|-------------------|------|
+| **PDF (text)** | pdf-parse | Skip (fast path) | pdf-lib extract + OCR | Yes |
+| **PDF (scanned)** | pdf-parse (minimal) | pdftoppm ALL pages + OCR | pdf-lib extract + OCR | Yes |
+| **DOCX** | mammoth | N/A | JSZip word/media/ + OCR | Yes |
+| **PPTX** | officeparser | N/A | JSZip ppt/media/ + OCR | Yes |
+| **XLSX** | officeparser | N/A | JSZip xl/media/ + OCR | Yes |
+| **EPUB** | epub2 | N/A | Future enhancement | Yes |
+| **TXT/MD/CSV** | Direct read | N/A | N/A | Yes |
+
+---
+
+## Performance Characteristics
+
+### Job Priority (BullMQ)
+
+| File Size | Priority | Processing Order |
+|-----------|----------|------------------|
+| < 1 MB | 1 (highest) | First |
+| 1-10 MB | 10 | Second |
+| 10-50 MB | 50 | Third |
+| 50-100 MB | 100 | Fourth |
+| > 100 MB | 200 (lowest) | Last |
+
+### Processing Time Estimates
+
+| Document Type | Pages/Images | Estimated Time |
+|--------------|--------------|----------------|
+| 10-page text PDF | 10 | ~2 seconds |
+| 10-page scanned PDF | 10 | ~30-60 seconds |
+| 100-page scanned PDF | 100 | ~5-10 minutes |
+| DOCX with 5 images | 5 | ~10-15 seconds |
+| PPTX with 20 slides + images | 20 | ~1-2 minutes |
+
+### Resource Management
+
+- Temp files cleaned up immediately after each page/image
+- Streaming query prevents memory overflow on large libraries
+- Job queue throttling via existing BullMQ concurrency settings
+- No page/image limits - processes everything
 
 ---
 
 ## Testing Plan
 
-### Unit Tests
+### Test Documents to Prepare
 
-```typescript
-// document.service.spec.ts
-describe('extractTextFromPdf', () => {
-  it('should use pdf-parse for text-based PDFs', async () => {
-    // Mock pdf-parse returning substantial text
-  });
+1. `text-based.pdf` - Normal PDF with selectable text (10+ pages)
+2. `scanned.pdf` - Image-based PDF (scan of printed document)
+3. `mixed.pdf` - Some text pages, some scanned pages
+4. `pdf-with-images.pdf` - PDF with embedded screenshots/diagrams
+5. `docx-with-images.docx` - Word doc with embedded images
+6. `pptx-presentation.pptx` - PowerPoint with slide images
+7. `xlsx-with-charts.xlsx` - Excel with embedded chart images
+8. `large-document.pdf` - 500+ page document (stress test)
 
-  it('should fall back to OCR for scanned PDFs', async () => {
-    // Mock pdf-parse returning minimal text
-    // Verify pdftoppm and ML OCR called
-  });
-});
-```
+### Verification Steps
 
-### Integration Tests
-
-1. Upload scanned PDF -> verify text extracted via OCR
-2. Upload text-based PDF -> verify pdf-parse used (faster)
-3. Search scanned PDF content -> verify results returned
-4. Semantic search "invoice" -> verify documents appear in results
-
-### Manual Test Documents
-
-Prepare test files:
-- `text-based.pdf` - Normal PDF with selectable text
-- `scanned.pdf` - Image-based PDF (scan of document)
-- `mixed.pdf` - Some text pages, some scanned pages
-- `document-with-images.docx` - DOCX with embedded screenshots
-
----
-
-## Risk Mitigation
-
-| Risk | Mitigation |
-|------|------------|
-| Performance impact from PDF OCR | Add page limit (100), async job processing |
-| ML service overload | Use existing job queue throttling |
-| Storage for temp files | Clean up immediately after processing |
-| False positive scanned detection | Tune 50 chars/page threshold, add override |
-| Large DOCX with many images | Limit embedded image extraction (disabled by default) |
+1. Upload each document
+2. Wait for processing to complete
+3. Search for text that appears in:
+   - Document structure (headings, paragraphs)
+   - Scanned page content
+   - Embedded image text
+4. Verify semantic search finds documents by concept
 
 ---
 
@@ -434,7 +792,11 @@ Prepare test files:
 
 Before implementation:
 
-- [ ] Confirm Phase 1 (Scanned PDF OCR) is highest priority
-- [ ] Decide on Phase 4 (Embedded Images) - include or defer?
-- [ ] Review configuration options
+- [ ] Confirm no page limits (process ALL pages)
+- [ ] Confirm file size priority (smaller first)
+- [ ] Confirm embedded image extraction for PDF, DOCX, PPTX, XLSX
+- [ ] Approve new dependencies (jszip, pdf-lib)
+- [ ] Review processing time estimates
 - [ ] Approve test document requirements
+
+**Ready for implementation?**

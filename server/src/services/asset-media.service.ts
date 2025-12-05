@@ -272,11 +272,30 @@ export class AssetMediaService extends BaseService {
       });
     }
 
-    // For Office documents, convert to PDF using LibreOffice
+    // For Office documents, check if we have a pre-converted PDF from ONLYOFFICE
     if (!mimeTypes.isDocument(asset.originalPath)) {
       throw new BadRequestException('Asset is not a document');
     }
 
+    // Check for pre-converted PDF (stored by ONLYOFFICE conversion during text extraction)
+    if (asset.encodedVideoPath && asset.encodedVideoPath.endsWith('.pdf')) {
+      const fs = await import('node:fs/promises');
+      try {
+        await fs.access(asset.encodedVideoPath);
+        this.logger.debug(`Serving pre-converted PDF for ${asset.id}`);
+        return new ImmichFileResponse({
+          path: asset.encodedVideoPath,
+          fileName: getFileNameWithoutExtension(asset.originalFileName) + '.pdf',
+          contentType: 'application/pdf',
+          cacheControl: CacheControl.PrivateWithCache,
+        });
+      } catch {
+        // Pre-converted PDF not found, fall through to LibreOffice conversion
+        this.logger.debug(`Pre-converted PDF not found for ${asset.id}, falling back to LibreOffice`);
+      }
+    }
+
+    // Fallback: convert on-demand using LibreOffice
     const pdfPath = await this.convertToPdf(asset);
 
     return new ImmichFileResponse({
@@ -288,11 +307,11 @@ export class AssetMediaService extends BaseService {
   }
 
   private async convertToPdf(asset: { id: string; originalPath: string }): Promise<string> {
-    const { execFile } = await import('child_process');
-    const { promisify } = await import('util');
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const os = await import('os');
+    const { execFile } = await import('node:child_process');
+    const { promisify } = await import('node:util');
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const os = await import('node:os');
     const execFileAsync = promisify(execFile);
 
     // Get file size for timeout scaling (larger files need more time)
@@ -305,9 +324,9 @@ export class AssetMediaService extends BaseService {
     }
 
     // Scale timeout based on file size: base 2 min + 1 min per 50MB, max 10 min
-    const baseTimeout = 120000; // 2 minutes
+    const baseTimeout = 120_000; // 2 minutes
     const timeoutPerMB = 1200; // ~1 min per 50MB
-    const maxTimeout = 600000; // 10 minutes max
+    const maxTimeout = 600_000; // 10 minutes max
     const timeout = Math.min(baseTimeout + Math.ceil(fileSizeMB * timeoutPerMB), maxTimeout);
 
     // Create temp directory for LibreOffice output
@@ -372,7 +391,7 @@ export class AssetMediaService extends BaseService {
     } catch (error: unknown) {
       // Clean up temp directory on error
       await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
-      if (error instanceof BadRequestException) throw error;
+      if (error instanceof BadRequestException) {throw error;}
       const errorMessage = error instanceof Error ? error.message : String(error);
       const isTimeout = errorMessage.includes('ETIMEDOUT') || errorMessage.includes('killed');
       if (isTimeout) {
