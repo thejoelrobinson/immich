@@ -6,9 +6,21 @@ This document describes the implementation of non-image file support (PDF, TXT, 
 
 ## Recent Updates (December 2024)
 
+### Admin Jobs Page - Document Extraction
+- **Manual Job Trigger**: Document Extraction job now visible in Admin > Jobs page
+- **Translation Keys**: Added `admin.document_extraction_job` and `admin.document_extraction_job_description`
+- **Job Controls**: Supports "ALL" (force reprocess), "MISSING" (only unprocessed), pause/resume/clear
+
+### ONLYOFFICE Conversion with Per-Page OCR
+- **PDF Conversion**: Office documents (DOCX, PPTX, XLSX, etc.) converted to PDF via ONLYOFFICE
+- **Text Layer Extraction**: Text extracted from PDF with per-page positions for search highlighting
+- **Per-Page Sparse OCR**: Pages with < 50 chars are rendered and OCR'd individually
+- **Page Association**: OCR'd text is associated with specific pages/slides for accurate search results
+- **Stored PDF**: Converted PDF stored for web viewing with accurate search highlighting
+
 ### Comprehensive Document Search
 - **Scanned PDF OCR**: Automatically detects scanned PDFs (< 50 chars/page) and runs OCR on all pages using pdftoppm
-- **Office Image Extraction**: Extracts embedded images from DOCX/PPTX/XLSX using JSZip and OCRs them via the ML service
+- **Per-Page OCR for Office Docs**: Sparse pages in converted PDFs are OCR'd individually (replaces whole-document image extraction)
 - **Priority Queue**: Smaller documents are processed first using BullMQ priority (1=smallest, 200=largest)
 - **No Page Limits**: All pages of all documents are processed, no artificial limits
 - **Smart Timeout Calculation**: OCR timeout scales with page count (3s/page, min 60s, max 600s)
@@ -22,16 +34,29 @@ The system determines if a PDF is scanned (image-based) vs. text-based:
 5. Send each page image to the ML OCR service (PaddleOCR)
 6. Combine all extracted text for search indexing
 
-### Office Document Image Extraction
-For OOXML formats (DOCX, PPTX, XLSX):
+### Office Document Processing (ONLYOFFICE Path)
+When ONLYOFFICE is available, Office documents are processed as follows:
+1. Convert document to PDF via ONLYOFFICE Conversion API
+2. Extract text with positions from PDF using pdf.js (per page)
+3. Detect sparse pages (< 50 chars) that likely contain images
+4. Render sparse pages to PNG using pdftoppm
+5. OCR each sparse page via ML OCR service (PaddleOCR)
+6. Append OCR'd text to the page's text data with `[OCR]` prefix
+7. Store all page text + positions in `document_text_positions` table
+8. Store converted PDF for web viewing
+
+### Office Document Processing (Fallback Path)
+When ONLYOFFICE is unavailable:
 1. Parse the ZIP structure using JSZip
-2. Find images in format-specific paths:
+2. Extract structural text using mammoth (DOCX) or officeparser (others)
+3. Find images in format-specific paths:
    - DOCX: `word/media/`
    - PPTX: `ppt/media/`
    - XLSX: `xl/media/`
-3. Extract PNG/JPEG images
-4. Send each image to ML OCR service
-5. Combine image text with document text for indexing
+4. Extract PNG/JPEG images
+5. Send each image to ML OCR service
+6. Combine image text with document text for indexing
+7. Note: No page association or position data in fallback path
 
 ## Overview
 
@@ -94,16 +119,21 @@ Comprehensive service handling document text extraction with OCR support:
 - `extractTextFromDocument()` - Routes to format-specific extractors
 
 **PDF Processing:**
-- `extractPdfText()` - Full PDF processing with scanned document detection
-- `isScannedPdf()` - Detects scanned PDFs (< 50 chars/page threshold)
-- `ocrPdfPages()` - Renders PDF pages via pdftoppm and OCRs each page
-- `extractPdfEmbeddedImages()` - (Future) Extract embedded images from PDFs
+- `extractTextFromPdfWithPages()` - Full PDF processing with per-page text positions using pdf.js
+- `extractTextFromPdf()` - Basic PDF text extraction with scanned document detection
+- `ocrAllPdfPages()` - Renders all PDF pages via pdftoppm and OCRs each page
+- `ocrSparsePdfPages()` - OCRs only pages with < 50 chars (for converted Office docs)
 
-**Office Document Processing:**
-- `extractDocxText()` - DOCX extraction with embedded image OCR
-- `extractPptxText()` - PPTX extraction with embedded image OCR
-- `extractXlsxText()` - XLSX extraction with embedded image OCR
-- `extractOfficeEmbeddedImages()` - Generic OOXML image extraction via JSZip
+**Office Document Processing (ONLYOFFICE):**
+- `convertWithOnlyOffice()` - Convert Office doc to PDF via ONLYOFFICE Conversion API
+- `storePdfForViewing()` - Store converted PDF for web viewing
+- `extractTextFromPdfWithPages()` - Extract text with positions from converted PDF
+- `ocrSparsePdfPages()` - OCR sparse pages and associate text with specific pages
+
+**Office Document Processing (Fallback):**
+- `extractTextFromOfficeDocument()` - Office extraction with embedded image OCR
+- `extractImagesFromOfficeDoc()` - Generic OOXML image extraction via JSZip
+- `ocrImageBuffers()` - OCR extracted image buffers
 
 **Text Formats:**
 - `extractPlainText()` - Direct text file reading
@@ -238,7 +268,9 @@ Response now includes `document` array:
 ### Server
 - `server/src/utils/mime-types.ts` - Added document types
 - `server/src/enum.ts` - Added Document asset type and job names
-- `server/src/services/document.service.ts` - NEW: Comprehensive document extraction with OCR
+- `server/src/services/document.service.ts` - Comprehensive document extraction with OCR, ONLYOFFICE conversion, per-page sparse OCR
+- `server/src/services/onlyoffice.service.ts` - ONLYOFFICE Conversion API integration with JWT auth
+- `server/src/services/queue.service.ts` - Added DocumentExtraction queue case for admin jobs page
 - `server/src/services/index.ts` - Added DocumentService export
 - `server/src/services/media.service.ts` - Added document thumbnail generation
 - `server/src/services/job.service.ts` - Trigger document extraction after upload
@@ -247,17 +279,22 @@ Response now includes `document` array:
 - `server/src/repositories/asset-job.repository.ts` - Added document extraction queries with file size ordering
 - `server/src/repositories/job.repository.ts` - Added priority support for DocumentTextExtraction jobs
 - `server/src/schema/tables/asset-job-status.table.ts` - Added documentTextExtractedAt column
-- `server/src/schema/migrations/1762500000000-AddDocumentTextExtractedAt.ts` - NEW: Migration for documentTextExtractedAt
+- `server/src/schema/migrations/1762500000000-AddDocumentTextExtractedAt.ts` - Migration for documentTextExtractedAt
 - `server/src/dtos/server.dto.ts` - Added document field to response DTO
 - `server/src/config.ts` - Added DocumentExtraction queue config
 - `server/src/types.ts` - Added IEntityJobWithPriority interface
-- `server/package.json` - Added pdf-parse, epub2, jszip, pdf-lib dependencies
+- `server/package.json` - Added pdf-parse, epub2, jszip, pdf-lib, pdfjs-dist dependencies
 - `server/test/repositories/config.repository.mock.ts` - Added onlyoffice mock config
 
 ### Web Frontend
 - `web/src/lib/utils/asset-utils.ts` - Added DOCUMENT case
 - `web/src/lib/utils/timeline-util.ts` - Added isDocument mapping
+- `web/src/lib/utils.ts` - Added DocumentExtraction to getQueueName mapping
 - `web/src/lib/managers/timeline-manager/types.ts` - Added isDocument property
+- `web/src/lib/components/jobs/JobsPanel.svelte` - Added Document Extraction job tile to admin UI
+
+### Internationalization
+- `i18n/en.json` - Added `admin.document_extraction_job` and `admin.document_extraction_job_description` translation keys
 
 ## Future Enhancements
 

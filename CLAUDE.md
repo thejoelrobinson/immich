@@ -9,9 +9,10 @@ This is a **Walmart fork** of Immich, a high-performance, self-hosted photo and 
 ### Fork Modifications
 - **Walmart branding**: Logo replaced with Walmart Spark
 - **Document support**: Added ability to upload, view, and search documents (PDF, TXT, EPUB, etc.)
-- **Comprehensive document search**: Full-text extraction from all document types, OCR for scanned PDFs, embedded image extraction and OCR from DOCX/PPTX/XLSX
+- **Comprehensive document search**: Full-text extraction from all document types, OCR for scanned PDFs, per-page sparse OCR for Office documents
 - **Priority queue processing**: Smaller documents processed first for faster user feedback
-- **ONLYOFFICE integration**: Native Office document viewing for DOCX, XLSX, PPTX (handles large files better than LibreOffice)
+- **ONLYOFFICE integration**: Native Office document viewing and PDF conversion for DOCX, XLSX, PPTX with accurate search highlighting
+- **Admin jobs page**: Document Extraction job visible in Admin > Jobs for manual triggering
 
 ### Git Remote Setup
 This fork uses two remotes to stay in sync with the official Immich repo:
@@ -176,17 +177,19 @@ This fork adds document file support beyond images and videos.
 | RTF | Yes (basic) | Placeholder icon | Native browser iframe |
 
 ### Key Components
-- **`server/src/services/document.service.ts`** - Text extraction from documents
+- **`server/src/services/document.service.ts`** - Text extraction with ONLYOFFICE conversion, per-page sparse OCR (`ocrSparsePdfPages`)
 - **`server/src/services/media.service.ts`** - Thumbnail generation (PDF via pdftoppm, Office via LibreOffice)
 - **`server/src/services/asset-media.service.ts`** - `documentPdf()` method for Office-to-PDF conversion
-- **`server/src/services/onlyoffice.service.ts`** - ONLYOFFICE JWT token generation and document config
+- **`server/src/services/onlyoffice.service.ts`** - ONLYOFFICE JWT token generation, Conversion API integration
+- **`server/src/services/queue.service.ts`** - Document Extraction job case for admin jobs page
 - **`server/src/controllers/asset-media.controller.ts`** - `GET /assets/:id/document/pdf` endpoint
 - **`server/src/controllers/onlyoffice.controller.ts`** - ONLYOFFICE API endpoints (`/api/onlyoffice/*`)
 - **`server/src/dtos/onlyoffice.dto.ts`** - ONLYOFFICE DTOs and file type mappings
 - **`web/src/lib/components/asset-viewer/document-viewer.svelte`** - Multi-format document viewer with ONLYOFFICE fallback
 - **`web/src/lib/components/asset-viewer/onlyoffice-viewer.svelte`** - ONLYOFFICE editor component
+- **`web/src/lib/components/jobs/JobsPanel.svelte`** - Document Extraction job tile in admin UI
 - **`web/src/lib/managers/onlyoffice-manager.svelte.ts`** - ONLYOFFICE script loading and config management
-- **`web/src/lib/utils.ts`** - `getDocumentPdfUrl()` helper
+- **`web/src/lib/utils.ts`** - `getDocumentPdfUrl()` helper, `getQueueName` with DocumentExtraction
 - **`server/src/utils/mime-types.ts`** - Document MIME type detection (`isDocument()`, `isPdf()`)
 
 ### Document Viewer Architecture
@@ -209,12 +212,13 @@ Text files       → Native browser iframe (documentUrl)
 ### How It Works
 1. Upload triggers `AssetType.Document` classification via `mimeTypes.assetType()`
 2. Thumbnail generation creates PDF first-page render (pdftoppm) or LibreOffice render for Office docs
-3. `DocumentTextExtraction` job extracts searchable text
-4. Text stored in `ocr_search` table (reuses OCR infrastructure)
+3. `DocumentTextExtraction` job processes the document:
+   - **ONLYOFFICE path (preferred)**: Convert to PDF → Extract text with positions → OCR sparse pages → Store PDF for viewing
+   - **Fallback path**: Extract text via mammoth/officeparser → OCR embedded images (no page association)
+4. Text stored in `ocr_search` table; per-page positions stored in `document_text_positions` table
 5. Documents appear in timeline with document icon overlay
-6. Document viewer detects file type by extension and uses appropriate renderer:
-   - All Office formats: Server-side LibreOffice PDF conversion (high fidelity)
-   - PDF/Text: Native browser rendering
+6. Document viewer shows pre-converted PDF for Office docs (accurate search highlighting)
+7. Manual reprocessing available via Admin > Jobs > Document Extraction
 
 ### Document PDF Endpoint
 
