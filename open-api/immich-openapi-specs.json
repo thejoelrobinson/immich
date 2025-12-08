@@ -7241,7 +7241,7 @@
     },
     "/onlyoffice/config": {
       "get": {
-        "operationId": "getConfig",
+        "operationId": "getOnlyOfficeConfig",
         "parameters": [],
         "responses": {
           "200": {

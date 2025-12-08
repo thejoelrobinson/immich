@@ -3525,7 +3525,7 @@ export function checkAvailable(opts?: Oazapfts.RequestOpts) {
 /**
  * Get ONLYOFFICE configuration status
  */
-export function getConfig(opts?: Oazapfts.RequestOpts) {
+export function getOnlyOfficeConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: OnlyOfficeConfigResponseDto;
@@ -4594,7 +4594,7 @@ export function getSyncStream({ syncStreamDto }: {
 /**
  * Get system configuration
  */
-export function getConfig2(opts?: Oazapfts.RequestOpts) {
+export function getConfig(opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SystemConfigDto;

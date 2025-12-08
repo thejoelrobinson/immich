@@ -23,7 +23,7 @@ export class OnlyOfficeController {
    */
   @Get('config')
   @Authenticated()
-  getConfig(): Promise<OnlyOfficeConfigResponseDto> {
+  getOnlyOfficeConfig(): Promise<OnlyOfficeConfigResponseDto> {
     return this.service.getOnlyOfficeConfig();
   }
 
