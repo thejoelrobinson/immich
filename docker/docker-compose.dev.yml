@@ -16,8 +16,8 @@ name: immich-dev
 services:
   immich-server:
     container_name: immich_server
-    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, MS-compatible fonts for better rendering, then start the server
-    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation --no-install-recommends && immich-dev"]
+    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, MS-compatible fonts for better rendering, libx265 for video thumbnails, then start the server
+    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation libx265-215 --no-install-recommends && immich-dev"]
     image: immich-server-dev:latest
     tty: true
     stdin_open: true
@@ -193,6 +193,31 @@ services:
       timeout: 10s
       retries: 3
 
+  # Video Transcription Service (faster-whisper + speechbrain for speaker diarization)
+  immich-transcription:
+    container_name: immich_transcription
+    build:
+      context: ../transcription
+      dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu  # set to 'cuda' for GPU acceleration
+    ports:
+      - 3004:3004
+    volumes:
+      - ${UPLOAD_LOCATION}/photos:/data:ro
+      - transcription-model-cache:/cache
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      DEVICE: ${TRANSCRIPTION_DEVICE:-cpu}
+      DIARIZATION_ENABLED: ${TRANSCRIPTION_DIARIZATION:-true}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3004/ping')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
@@ -216,6 +241,7 @@ services:
 
 volumes:
   model-cache:
+  transcription-model-cache:
   prometheus-data:
   grafana-data:
   postgres-dev-data:

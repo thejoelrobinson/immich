@@ -542,6 +542,7 @@ export enum QueueName {
   BackupDatabase = 'backupDatabase',
   Ocr = 'ocr',
   DocumentExtraction = 'documentExtraction',
+  VideoTranscription = 'videoTranscription',
   Workflow = 'workflow',
 }
 
@@ -623,6 +624,10 @@ export enum JobName {
   // Document Text Extraction
   DocumentTextExtractionQueueAll = 'DocumentTextExtractionQueueAll',
   DocumentTextExtraction = 'DocumentTextExtraction',
+
+  // Video Transcription
+  VideoTranscriptionQueueAll = 'VideoTranscriptionQueueAll',
+  VideoTranscription = 'VideoTranscription',
 
   // Workflow
   WorkflowRun = 'WorkflowRun',

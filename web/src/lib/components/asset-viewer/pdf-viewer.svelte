@@ -3,7 +3,7 @@
   import { documentSearchManager, type PageTextPositions, type TextPosition } from '$lib/stores/document-search.svelte';
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
-  import { onMount, onDestroy, untrack } from 'svelte';
+  import { onMount, onDestroy, untrack, tick } from 'svelte';
   import * as pdfjsLib from 'pdfjs-dist';
 
   interface Props {
@@ -15,12 +15,37 @@
 
   let { asset, searchTerm = '', onPreviousAsset = null, onNextAsset = null }: Props = $props();
 
+  // Constants
+  // Debounce delay for rapid document navigation - allows container layout to complete
+  const PDF_LOAD_DEBOUNCE_MS = 100;
+  // Container padding (24px per side) used in scale calculations
+  const CONTAINER_PADDING_PX = 24;
+  const TOTAL_PADDING = CONTAINER_PADDING_PX * 2;
+  // Minimum container dimensions to consider it "ready" for scale calculation
+  const MIN_CONTAINER_WIDTH = 100;
+  const MIN_CONTAINER_HEIGHT = 100;
+  // Maximum time to wait for container to be ready (ms)
+  const CONTAINER_READY_TIMEOUT_MS = 2000;
+  // Scale bounds: min 0.5 keeps text readable, max prevents excessive memory usage
+  const SCALE_MIN = 0.5;
+  const SCALE_MAX_FIT = 3.0; // For fit-to-screen calculation
+  const SCALE_MAX_ZOOM = 4.0; // For manual zoom
+  // Zoom increment for +/- buttons
+  const ZOOM_INCREMENT = 0.25;
+  // Minimum highlight dimensions to ensure visibility
+  const HIGHLIGHT_MIN_WIDTH_PX = 10;
+  const HIGHLIGHT_MIN_HEIGHT_PX = 14;
+
   // PDF.js state
   let pdfDocument: pdfjsLib.PDFDocumentProxy | null = null;
   let currentRenderTask: pdfjsLib.RenderTask | null = null;
+  let currentLoadingTask: pdfjsLib.PDFDocumentLoadingTask | null = null;
+  let loadDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  let renderSequence = 0; // Tracks which render should complete
+  let isMounted = true; // Guards against operations after unmount
   let currentPage = $state(1);
   let totalPages = $state(0);
-  let scale = $state(1.5);
+  let scale = $state(1.0); // Will be calculated to fit screen on mount
   let isLoading = $state(true);
   let loadError = $state<string | null>(null);
 
@@ -46,17 +71,24 @@
   );
   const currentMatch = $derived(documentSearchManager.currentMatch);
 
-  // Set up PDF.js worker
-  onMount(async () => {
+  // Set up PDF.js worker on mount - $effect handles the actual loading
+  onMount(() => {
     // Configure worker path for pdf.js using CDN (version must match package.json)
     const pdfjsVersion = '4.10.38';
     pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.mjs`;
-
-    await loadPdf();
+    // Note: loadPdf() is triggered by the $effect that tracks asset.id
   });
 
-  onDestroy(() => {
-    // Cancel any ongoing render operation
+  // Centralized cleanup to prevent code duplication (DRY principle)
+  function cleanup() {
+    if (loadDebounceTimer) {
+      clearTimeout(loadDebounceTimer);
+      loadDebounceTimer = null;
+    }
+    if (currentLoadingTask) {
+      currentLoadingTask.destroy();
+      currentLoadingTask = null;
+    }
     if (currentRenderTask) {
       currentRenderTask.cancel();
       currentRenderTask = null;
@@ -65,28 +97,121 @@
       pdfDocument.destroy();
       pdfDocument = null;
     }
-    // Clear cached text positions to prevent memory leak
+  }
+
+  onDestroy(() => {
+    isMounted = false; // Mark as unmounted first to prevent async callbacks
+    cleanup();
     pageTextPositions.clear();
   });
 
+  // Wait for container to have valid dimensions using ResizeObserver
+  function waitForContainerReady(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!containerElement) {
+        resolve(false);
+        return;
+      }
+
+      // Check if already ready
+      if (containerElement.clientWidth >= MIN_CONTAINER_WIDTH &&
+          containerElement.clientHeight >= MIN_CONTAINER_HEIGHT) {
+        resolve(true);
+        return;
+      }
+
+      // Set up timeout
+      const timeoutId = setTimeout(() => {
+        observer.disconnect();
+        resolve(false);
+      }, CONTAINER_READY_TIMEOUT_MS);
+
+      // Use ResizeObserver to wait for container to be properly sized
+      const observer = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          if (width >= MIN_CONTAINER_WIDTH && height >= MIN_CONTAINER_HEIGHT) {
+            clearTimeout(timeoutId);
+            observer.disconnect();
+            resolve(true);
+            return;
+          }
+        }
+      });
+
+      observer.observe(containerElement);
+    });
+  }
+
+  // Calculate scale to fit page within container with padding
+  async function calculateFitScale(page: pdfjsLib.PDFPageProxy): Promise<number> {
+    if (!containerElement) return 1.0;
+
+    // Get the PDF page dimensions at scale 1.0
+    const viewport = page.getViewport({ scale: 1.0 });
+    const pageWidth = viewport.width;
+    const pageHeight = viewport.height;
+
+    // Get container dimensions (with padding/margin considerations)
+    const containerWidth = containerElement.clientWidth - TOTAL_PADDING;
+    const containerHeight = containerElement.clientHeight - TOTAL_PADDING;
+
+    // Calculate scale to fit width and height
+    const scaleToFitWidth = containerWidth / pageWidth;
+    const scaleToFitHeight = containerHeight / pageHeight;
+
+    // Use the smaller scale to ensure page fits entirely
+    const fitScale = Math.min(scaleToFitWidth, scaleToFitHeight);
+
+    // Clamp to reasonable bounds
+    return Math.max(SCALE_MIN, Math.min(SCALE_MAX_FIT, fitScale));
+  }
+
   async function loadPdf() {
+    if (!isMounted) return;
+
     isLoading = true;
     loadError = null;
 
-    console.log('[PdfViewer] Loading PDF from:', documentUrl, 'isOfficeDoc:', isOfficeDoc);
+    // Note: cleanup() is called by $effect before loadPdf, not here
+    // This prevents clearing the debounce timer
 
     try {
+      // Add cache-busting parameter to prevent browser caching partial responses
+      // This helps avoid "Bad end offset" errors from stale/incomplete cached data
+      const urlWithCacheBust = `${documentUrl}${documentUrl.includes('?') ? '&' : '?'}_t=${Date.now()}`;
+
       // Use withCredentials to pass authentication cookies
+      // Disable streaming and range requests to prevent "Bad end offset" errors
+      // These errors occur when PDF.js tries to read past incomplete cached data
       const loadingTask = pdfjsLib.getDocument({
-        url: documentUrl,
+        url: urlWithCacheBust,
         withCredentials: true,
+        disableAutoFetch: true,  // Don't fetch the entire file automatically
+        disableStream: true,     // Don't use streaming - wait for full download
+        disableRange: true,      // Don't use range requests - prevents partial caching issues
       });
-      pdfDocument = await loadingTask.promise;
+      currentLoadingTask = loadingTask;
+      const newPdfDocument = await loadingTask.promise;
+
+      // Check if this task is still current (wasn't cancelled during load)
+      if (currentLoadingTask !== loadingTask || !isMounted) {
+        newPdfDocument.destroy();
+        return;
+      }
+
+      currentLoadingTask = null;
+      pdfDocument = newPdfDocument;
+
+      // Guard against null document after successful load
+      if (!pdfDocument) {
+        throw new Error('PDF document is null after successful load');
+      }
+
       totalPages = pdfDocument.numPages;
-      console.log('[PdfViewer] PDF loaded successfully, pages:', totalPages);
 
       // Load search matches if search term provided
-      if (searchTerm) {
+      if (searchTerm && isMounted) {
         await documentSearchManager.loadMatches(asset.id, searchTerm);
         // Navigate to first match's page if there are matches
         if (documentSearchManager.hasMatches && documentSearchManager.currentMatch) {
@@ -94,20 +219,56 @@
         }
       }
 
+      // Wait for container to be properly sized using ResizeObserver
+      // This is more reliable than RAF for cases like opening from search
+      const containerReady = await waitForContainerReady();
+
+      // Re-check if we're still current after waiting
+      if (!pdfDocument || pdfDocument !== newPdfDocument || !isMounted) {
+        return;
+      }
+
+      // Calculate initial scale to fit screen after PDF is loaded
+      if (containerReady && containerElement) {
+        const firstPage = await pdfDocument.getPage(currentPage);
+        scale = await calculateFitScale(firstPage);
+      } else {
+        // Container not ready after timeout, use default scale
+        // User can click "Fit" button to fix
+        scale = 1.0;
+      }
+
+      // IMPORTANT: Set isLoading = false BEFORE renderPage so the canvas element
+      // is rendered in the DOM. Otherwise canvasElement is undefined and render fails.
+      isLoading = false;
+      await tick(); // Wait for Svelte to update DOM and bind canvasElement
+
       await renderPage(currentPage);
-    } catch (error) {
-      console.error('Failed to load PDF:', error);
-      loadError = error instanceof Error ? error.message : 'Failed to load PDF';
+    } catch (error: unknown) {
+      // Ignore cancellation errors - PDF.js throws these when loading is cancelled
+      if (error instanceof Error) {
+        if (error.name === 'AbortException' || error.message.includes('destroyed')) {
+          return; // Expected cancellation, not an error
+        }
+        // Also ignore "Bad end offset" errors during navigation - user can retry
+        if (error.message.includes('Bad end offset')) {
+          return;
+        }
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load PDF';
+      loadError = errorMessage;
     } finally {
       isLoading = false;
     }
   }
 
   async function renderPage(pageNum: number) {
-    if (!pdfDocument || !canvasElement) return;
+    if (!pdfDocument || !canvasElement || !isMounted) return;
+
+    // Generate sequence number to track which render should complete
+    const currentSequence = ++renderSequence;
 
     // Cancel any ongoing render operation before starting a new one
-    // Store reference before nullifying to avoid race condition
     const taskToCancel = currentRenderTask;
     currentRenderTask = null;
     if (taskToCancel) {
@@ -116,8 +277,11 @@
 
     try {
       const page = await pdfDocument.getPage(pageNum);
-      const viewport = page.getViewport({ scale });
 
+      // Check if we're still current after async operation
+      if (currentSequence !== renderSequence || !isMounted) return;
+
+      const viewport = page.getViewport({ scale });
       const canvas = canvasElement;
       const context = canvas.getContext('2d');
       if (!context) return;
@@ -133,21 +297,28 @@
       // Store the render task so we can cancel it if needed
       currentRenderTask = page.render(renderContext);
       await currentRenderTask.promise;
-      currentRenderTask = null;
+
+      // Only clear if this sequence is still current
+      if (currentSequence === renderSequence) {
+        currentRenderTask = null;
+      }
 
       // Fetch text positions for this page and render highlights
-      await fetchAndRenderHighlights(pageNum, viewport);
-    } catch (error) {
+      if (isMounted) {
+        await fetchAndRenderHighlights(pageNum, viewport);
+      }
+    } catch (error: unknown) {
       // Ignore cancellation errors - they're expected when navigating quickly
       if (error instanceof Error && error.message.includes('Rendering cancelled')) {
         return;
       }
-      console.error(`Failed to render page ${pageNum}:`, error);
+      // Non-critical: page render failed, user can try navigating again
+      // No action needed - the page simply won't display
     }
   }
 
   async function fetchAndRenderHighlights(pageNum: number, viewport: pdfjsLib.PageViewport) {
-    if (!searchTerm || !highlightLayerElement) return;
+    if (!searchTerm || !highlightLayerElement || !isMounted) return;
 
     // Check if we have cached positions for this page
     let positions = pageTextPositions.get(pageNum);
@@ -155,16 +326,27 @@
     if (!positions) {
       try {
         const response = await fetch(`/api/documents/${asset.id}/pages/${pageNum}/text-positions`);
+
+        // Check if still mounted after async fetch
+        if (!isMounted) return;
+
         if (response.ok) {
           positions = await response.json() as PageTextPositions;
+
+          // Check again after second async operation
+          if (!isMounted) return;
+
           pageTextPositions.set(pageNum, positions);
         }
-      } catch (error) {
-        console.error(`Failed to fetch text positions for page ${pageNum}:`, error);
+      } catch (error: unknown) {
+        // Expected: fetch can fail when navigating away or due to network issues
+        // This is non-critical - highlights simply won't render for this page
+        // The document remains viewable without search highlighting
+        void error; // Acknowledge the error is intentionally ignored
       }
     }
 
-    if (positions) {
+    if (positions && isMounted) {
       renderHighlights(pageNum, positions, viewport);
     }
   }
@@ -174,22 +356,14 @@
     positions: PageTextPositions | undefined,
     viewport: { width: number; height: number },
   ) {
-    console.log('[renderHighlights] pageNum:', pageNum, 'positions:', positions, 'searchTerm:', searchTerm);
-
-    if (!highlightLayerElement) {
-      console.log('[renderHighlights] No highlightLayerElement');
-      return;
-    }
+    if (!highlightLayerElement) return;
 
     // Clear existing highlights
     highlightLayerElement.innerHTML = '';
     highlightLayerElement.style.width = `${viewport.width}px`;
     highlightLayerElement.style.height = `${viewport.height}px`;
 
-    if (!positions?.textItems || !searchTerm) {
-      console.log('[renderHighlights] No textItems or searchTerm:', { hasTextItems: !!positions?.textItems, searchTerm });
-      return;
-    }
+    if (!positions?.textItems || !searchTerm) return;
 
     // Find all matches of the search term in the page text
     const searchLower = searchTerm.toLowerCase();
@@ -287,14 +461,11 @@
         // Subtract height to position at top of text (Y is baseline position)
         const y = (item.y - item.height) * viewport.height;
 
-        console.log('[Highlight] item:', item.text, 'normalized:', { x: item.x, y: item.y, w: item.width, h: item.height },
-          'pixels:', { x, y, width, height }, 'viewport:', viewport);
-
         highlights.push({
           x,
           y,
-          width: Math.max(width, 10), // Minimum width
-          height: Math.max(height, 14), // Minimum height
+          width: Math.max(width, HIGHLIGHT_MIN_WIDTH_PX),
+          height: Math.max(height, HIGHLIGHT_MIN_HEIGHT_PX),
           matchIndex: matchIdx,
         });
       }
@@ -320,12 +491,19 @@
   }
 
   function zoomIn() {
-    scale = Math.min(scale + 0.25, 4);
+    scale = Math.min(scale + ZOOM_INCREMENT, SCALE_MAX_ZOOM);
     renderPage(currentPage);
   }
 
   function zoomOut() {
-    scale = Math.max(scale - 0.25, 0.5);
+    scale = Math.max(scale - ZOOM_INCREMENT, SCALE_MIN);
+    renderPage(currentPage);
+  }
+
+  async function fitToScreen() {
+    if (!pdfDocument || !containerElement) return;
+    const page = await pdfDocument.getPage(currentPage);
+    scale = await calculateFitScale(page);
     renderPage(currentPage);
   }
 
@@ -369,13 +547,32 @@
     }
   });
 
-  // Re-render when asset changes
+  // Re-render when asset changes (with debounce for rapid navigation)
   $effect(() => {
-    const _ = asset.id;
+    asset.id; // Track dependency
     untrack(() => {
+      // Show loading immediately for user feedback
+      isLoading = true;
+      loadError = null;
+
+      // Clear any pending load
+      if (loadDebounceTimer) {
+        clearTimeout(loadDebounceTimer);
+      }
+
+      // Cleanup previous state immediately to prevent stale renders
+      cleanup();
       pageTextPositions = new Map();
       currentPage = 1;
-      loadPdf();
+
+      // Debounce the actual load to prevent rapid-fire requests
+      // This gives the UI time to settle and ensures container is sized
+      loadDebounceTimer = setTimeout(() => {
+        loadDebounceTimer = null;
+        if (isMounted) {
+          loadPdf();
+        }
+      }, PDF_LOAD_DEBOUNCE_MS);
     });
   });
 </script>
@@ -414,6 +611,9 @@
       <button onclick={zoomOut} class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600"> - </button>
       <span class="text-sm w-16 text-center">{Math.round(scale * 100)}%</span>
       <button onclick={zoomIn} class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600"> + </button>
+      <button onclick={fitToScreen} class="px-3 py-1 rounded bg-gray-700 hover:bg-gray-600 text-xs" title="Fit to screen">
+        Fit
+      </button>
     </div>
   </div>
 

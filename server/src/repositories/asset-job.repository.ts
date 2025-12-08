@@ -404,4 +404,31 @@ export class AssetJobRepository {
   streamForMigrationJob() {
     return this.db.selectFrom('asset').select(['id']).where('asset.deletedAt', 'is', null).stream();
   }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForVideoTranscriptionJob(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .select(['asset.id', 'asset_exif.fileSizeInByte'])
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .where('asset_job_status.transcriptionExtractedAt', 'is', null),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.type', '=', AssetType.Video)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .orderBy(sql`COALESCE(asset_exif."fileSizeInByte", 9999999999)`, 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForVideoTranscription(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.visibility', 'asset.originalPath', 'asset.originalFileName', 'asset.type', 'asset.duration'])
+      .where('asset.id', '=', id)
+      .executeTakeFirst();
+  }
 }

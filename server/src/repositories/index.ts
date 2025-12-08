@@ -12,6 +12,7 @@ import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { DocumentTextRepository } from 'src/repositories/document-text.repository';
+import { TranscriptionRepository } from 'src/repositories/transcription.repository';
 import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
@@ -98,6 +99,7 @@ export const repositories = [
   SystemMetadataRepository,
   TagRepository,
   TelemetryRepository,
+  TranscriptionRepository,
   TrashRepository,
   UserRepository,
   ViewRepository,

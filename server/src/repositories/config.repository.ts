@@ -116,6 +116,11 @@ export interface EnvData {
     immichInternalUrl: string;
   };
 
+  transcription: {
+    enabled: boolean;
+    url: string;
+  };
+
   noColor: boolean;
   nodeVersion?: string;
 }
@@ -345,6 +350,11 @@ const getEnv = (): EnvData => {
       externalUrl: dto.ONLYOFFICE_EXTERNAL_URL || 'http://localhost:8080',
       jwtSecret: dto.ONLYOFFICE_JWT_SECRET || '',
       immichInternalUrl: dto.IMMICH_INTERNAL_URL || 'http://immich-server:2283',
+    },
+
+    transcription: {
+      enabled: !!dto.TRANSCRIPTION_ENABLED,
+      url: dto.TRANSCRIPTION_URL || 'http://immich-transcription:3004',
     },
 
     noColor: !!dto.NO_COLOR,

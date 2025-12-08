@@ -106,6 +106,16 @@ class BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   ocr?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  transcript?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  content?: string;
 }
 
 class BaseSearchWithResultsDto extends BaseSearchDto {

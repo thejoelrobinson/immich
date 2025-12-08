@@ -403,6 +403,10 @@ export type JobItem =
   | { name: JobName.DocumentTextExtractionQueueAll; data: IBaseJob }
   | { name: JobName.DocumentTextExtraction; data: IEntityJobWithPriority }
 
+  // Video Transcription
+  | { name: JobName.VideoTranscriptionQueueAll; data: IBaseJob }
+  | { name: JobName.VideoTranscription; data: IEntityJobWithPriority }
+
   // Workflow
   | { name: JobName.WorkflowRun; data: IWorkflowJob };
 

@@ -51,6 +51,9 @@
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
+  import ContentSearchNav from './content-search-nav.svelte';
+  import { transcriptionSearchManager } from '$lib/stores/transcription-search.svelte';
+  import { isTranscriptionMatch, type AnyContentMatch } from '$lib/stores/content-search.svelte';
 
   type HasAsset = boolean;
 
@@ -118,6 +121,13 @@
   let zoomToggle = $state(() => void 0);
   let playOriginalVideo = $state($alwaysLoadOriginalVideo);
 
+  // Transcription state
+  let hasTranscription = $state(false);
+  let showTranscriptionSearch = $state(false);
+  let transcriptionSearchInput = $state('');
+  let videoViewerRef: VideoViewer | undefined = $state();
+  let currentVideoTime = $state(0);
+
   // Document extensions for fallback detection (when asset.type is not set correctly)
   const documentExtensions = ['.pdf', '.txt', '.epub', '.md', '.rtf', '.doc', '.docx', '.odt', '.pptx', '.ppt', '.xlsx', '.xls', '.csv', '.json', '.xml', '.html', '.htm'];
 
@@ -147,8 +157,8 @@
     if (queryParam) {
       try {
         const parsed = JSON.parse(queryParam);
-        // Use smart search query or OCR search term
-        const term = parsed.query || parsed.ocr || '';
+        // Use smart search query, OCR search term, or content search term
+        const term = parsed.query || parsed.ocr || parsed.content || '';
         console.log('[AssetViewer] Extracted search term from query:', term, 'parsed:', parsed);
         return term;
       } catch (e) {
@@ -448,11 +458,82 @@
       handlePromiseError(ocrManager.getAssetOcr(currentAssetId));
     }
   });
+
+  // Check if video has transcription when asset changes
+  $effect(() => {
+    if (asset.type === AssetTypeEnum.Video && currentAssetId) {
+      handlePromiseError(checkVideoTranscription(currentAssetId));
+    } else {
+      hasTranscription = false;
+      transcriptionSearchManager.clear();
+    }
+  });
+
+  // Transcription functions
+  async function checkVideoTranscription(assetId: string) {
+    hasTranscription = await transcriptionSearchManager.checkTranscriptionAvailable(assetId);
+
+    // Auto-load transcription search if coming from Content search with a search term
+    if (hasTranscription && documentSearchTerm) {
+      transcriptionSearchInput = documentSearchTerm;
+      handlePromiseError(transcriptionSearchManager.loadMatches(assetId, documentSearchTerm));
+    }
+  }
+
+  function handleTranscriptionSeek(time: number) {
+    videoViewerRef?.seekTo(time);
+  }
+
+  function handleTranscriptionSearchNavigate(match: AnyContentMatch) {
+    if (isTranscriptionMatch(match)) {
+      videoViewerRef?.seekTo(match.startTime);
+    }
+  }
+
+  function handleVideoTimeUpdate(time: number) {
+    currentVideoTime = time;
+  }
+
+  function handleTranscriptionSearch() {
+    if (transcriptionSearchInput.trim() && hasTranscription) {
+      handlePromiseError(transcriptionSearchManager.loadMatches(asset.id, transcriptionSearchInput.trim()));
+    }
+  }
+
+  function handleTranscriptionSearchKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      handleTranscriptionSearch();
+    } else if (event.key === 'Escape') {
+      showTranscriptionSearch = false;
+      transcriptionSearchManager.clear();
+    }
+  }
+
+  function toggleTranscriptionSearch() {
+    showTranscriptionSearch = !showTranscriptionSearch;
+    if (!showTranscriptionSearch) {
+      transcriptionSearchManager.clear();
+      transcriptionSearchInput = '';
+    }
+  }
 </script>
 
 <OnEvents onAssetReplace={handleAssetReplace} />
 
 <svelte:document bind:fullscreenElement />
+
+<!-- Transcription search navigation overlay -->
+{#if transcriptionSearchManager.searchTerm}
+  <ContentSearchNav
+    searchState={transcriptionSearchManager}
+    onNavigate={handleTranscriptionSearchNavigate}
+    onClose={() => {
+      showTranscriptionSearch = false;
+      transcriptionSearchManager.clear();
+      transcriptionSearchInput = '';
+    }}
+  />
+{/if}
 
 <section
   id="immich-asset-viewer"
@@ -581,6 +662,7 @@
           />
         {:else}
           <VideoViewer
+            bind:this={videoViewerRef}
             assetId={asset.id}
             cacheKey={asset.thumbhash}
             projectionType={asset.exifInfo?.projectionType}
@@ -590,7 +672,10 @@
             onClose={closeViewer}
             onVideoEnded={() => navigateAsset()}
             onVideoStarted={handleVideoStarted}
+            onTimeUpdate={handleVideoTimeUpdate}
             {playOriginalVideo}
+            {hasTranscription}
+            showSubtitles={true}
           />
         {/if}
 
@@ -610,6 +695,42 @@
         {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Image && !isShowEditor && ocrManager.hasOcrData}
           <div class="absolute bottom-0 end-0 mb-6 me-6">
             <OcrButton />
+          </div>
+        {/if}
+
+        <!-- Transcription search button for videos -->
+        {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Video && hasTranscription && !isShowEditor}
+          <div class="absolute bottom-0 end-0 mb-6 me-6 flex flex-col gap-2 items-end">
+            {#if showTranscriptionSearch}
+              <div class="flex items-center gap-2 bg-gray-800/90 rounded-lg px-3 py-2">
+                <input
+                  type="text"
+                  bind:value={transcriptionSearchInput}
+                  onkeydown={handleTranscriptionSearchKeydown}
+                  placeholder="Search transcript..."
+                  class="bg-transparent text-white text-sm outline-none w-48 placeholder-gray-400"
+                />
+                <button
+                  onclick={handleTranscriptionSearch}
+                  class="text-white hover:text-blue-400 transition-colors"
+                  title="Search"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            {/if}
+            <button
+              onclick={toggleTranscriptionSearch}
+              class="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-full transition-colors text-white"
+              title={showTranscriptionSearch ? 'Close search' : 'Search transcription (Ctrl+F)'}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+              </svg>
+            </button>
           </div>
         {/if}
       {/key}

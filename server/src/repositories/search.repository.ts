@@ -88,6 +88,14 @@ export interface SearchOcrOptions {
   ocr?: string;
 }
 
+export interface SearchTranscriptOptions {
+  transcript?: string;
+}
+
+export interface SearchContentOptions {
+  content?: string;
+}
+
 export interface SearchPeopleOptions {
   personIds?: string[];
 }
@@ -119,7 +127,9 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPeopleOptions &
   SearchTagOptions &
   SearchAlbumOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchTranscriptOptions &
+  SearchContentOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -133,7 +143,9 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchTranscriptOptions &
+  SearchContentOptions;
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 

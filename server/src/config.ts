@@ -236,6 +236,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.DocumentExtraction]: { concurrency: 2 },
+    [QueueName.VideoTranscription]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
   },
   logging: {

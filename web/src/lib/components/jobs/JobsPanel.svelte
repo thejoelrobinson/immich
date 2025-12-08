@@ -11,6 +11,7 @@
   } from '@immich/sdk';
   import { modalManager, toastManager } from '@immich/ui';
   import {
+    mdiClosedCaption,
     mdiContentDuplicate,
     mdiFaceRecognition,
     mdiFileDocument,
@@ -141,6 +142,13 @@
       icon: mdiFileDocument,
       title: $getQueueName(QueueName.DocumentExtraction),
       subtitle: $t('admin.document_extraction_job_description'),
+      allText: $t('all'),
+      missingText: $t('missing'),
+    },
+    [QueueName.VideoTranscription]: {
+      icon: mdiClosedCaption,
+      title: $getQueueName(QueueName.VideoTranscription),
+      subtitle: $t('admin.video_transcription_job_description'),
       allText: $t('all'),
       missingText: $t('missing'),
     },

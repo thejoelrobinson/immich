@@ -163,6 +163,7 @@ export const getQueueName = derived(t, ($t) => {
       [QueueName.BackupDatabase]: $t('admin.backup_database'),
       [QueueName.Ocr]: $t('admin.machine_learning_ocr'),
       [QueueName.DocumentExtraction]: $t('admin.document_extraction_job'),
+      [QueueName.VideoTranscription]: $t('admin.video_transcription_job'),
       [QueueName.Workflow]: $t('workflow'),
     };
 
@@ -222,6 +223,14 @@ export const getDocumentPdfUrl = (options: string | AssetUrlOptions) => {
   }
   const { id, cacheKey } = options;
   return createUrl(`/assets/${id}/document/pdf`, { ...authManager.params, c: cacheKey });
+};
+
+export const getVideoVttUrl = (options: string | AssetUrlOptions) => {
+  if (typeof options === 'string') {
+    options = { id: options };
+  }
+  const { id } = options;
+  return createUrl(`/api/videos/${id}/transcription/vtt`, { ...authManager.params });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>

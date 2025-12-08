@@ -96,5 +96,8 @@ export class QueuesResponseDto implements Record<QueueName, QueueResponseDto> {
   [QueueName.DocumentExtraction]!: QueueResponseDto;
 
   @ApiProperty({ type: QueueResponseDto })
+  [QueueName.VideoTranscription]!: QueueResponseDto;
+
+  @ApiProperty({ type: QueueResponseDto })
   [QueueName.Workflow]!: QueueResponseDto;
 }

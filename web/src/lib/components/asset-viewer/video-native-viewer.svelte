@@ -10,7 +10,7 @@
     videoViewerMuted,
     videoViewerVolume,
   } from '$lib/stores/preferences.store';
-  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
+  import { getAssetOriginalUrl, getAssetPlaybackUrl, getAssetThumbnailUrl, getVideoVttUrl } from '$lib/utils';
   import { AssetMediaSize } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
   import { onDestroy, onMount } from 'svelte';
@@ -22,10 +22,13 @@
     loopVideo: boolean;
     cacheKey: string | null;
     playOriginalVideo: boolean;
+    showSubtitles?: boolean;
+    hasTranscription?: boolean;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
     onVideoStarted?: () => void;
+    onTimeUpdate?: (currentTime: number) => void;
     onClose?: () => void;
   }
 
@@ -34,16 +37,31 @@
     loopVideo,
     cacheKey,
     playOriginalVideo,
+    showSubtitles = false,
+    hasTranscription = false,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
     onVideoStarted = () => {},
+    onTimeUpdate = () => {},
     onClose = () => {},
   }: Props = $props();
+
+  // Expose video player for external control (e.g., seeking to timestamp)
+  export function seekTo(time: number) {
+    if (videoPlayer) {
+      videoPlayer.currentTime = time;
+    }
+  }
+
+  export function getCurrentTime(): number {
+    return videoPlayer?.currentTime ?? 0;
+  }
 
   let videoPlayer: HTMLVideoElement | undefined = $state();
   let isLoading = $state(true);
   let assetFileUrl = $state('');
+  let vttUrl = $derived(hasTranscription ? getVideoVttUrl(assetId) : '');
   let isScrubbing = $state(false);
   let showVideo = $state(false);
 
@@ -151,12 +169,16 @@
         onplaying={(e) => {
           e.currentTarget.focus();
         }}
+        ontimeupdate={(e) => onTimeUpdate(e.currentTarget.currentTime)}
         onclose={() => onClose()}
         muted={$videoViewerMuted}
         bind:volume={$videoViewerVolume}
         poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
         src={assetFileUrl}
       >
+        {#if showSubtitles && hasTranscription && vttUrl}
+          <track kind="subtitles" src={vttUrl} srclang="en" label="Transcription" default />
+        {/if}
       </video>
 
       {#if isLoading}

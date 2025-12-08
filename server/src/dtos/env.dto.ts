@@ -222,4 +222,12 @@ export class EnvDto {
   @IsString()
   @Optional()
   IMMICH_INTERNAL_URL?: string;
+
+  // Video Transcription
+  @ValidateBoolean({ optional: true })
+  TRANSCRIPTION_ENABLED?: boolean;
+
+  @IsString()
+  @Optional()
+  TRANSCRIPTION_URL?: string;
 }

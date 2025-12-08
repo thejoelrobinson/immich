@@ -10,6 +10,7 @@ export interface TextPosition {
 }
 
 export interface DocumentSearchMatch {
+  type: 'document';
   pageNumber: number;
   textSnippet: string;
   matchStart: number;
@@ -82,7 +83,11 @@ class DocumentSearchManager {
       }
 
       const data = await response.json();
-      this.#matches = data.matches || [];
+      // Add type discriminator to matches from API
+      this.#matches = (data.matches || []).map((match: Omit<DocumentSearchMatch, 'type'>) => ({
+        ...match,
+        type: 'document' as const,
+      }));
     } catch (error) {
       console.error('Failed to load document search matches:', error);
       this.#matches = [];

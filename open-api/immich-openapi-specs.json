@@ -8625,6 +8625,14 @@
             }
           },
           {
+            "name": "content",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "country",
             "required": false,
             "in": "query",
@@ -8821,6 +8829,14 @@
             "in": "query",
             "schema": {
               "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "transcript",
+            "required": false,
+            "in": "query",
+            "schema": {
               "type": "string"
             }
           },
@@ -14000,6 +14016,281 @@
         "x-immich-state": "Stable"
       }
     },
+    "/videos/{id}/transcription": {
+      "get": {
+        "operationId": "getTranscription",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptionResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/videos/{id}/transcription/available": {
+      "get": {
+        "operationId": "hasTranscription",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/videos/{id}/transcription/regenerate": {
+      "post": {
+        "operationId": "regenerateTranscription",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.update"
+      }
+    },
+    "/videos/{id}/transcription/search": {
+      "get": {
+        "operationId": "searchTranscription",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "Search term to find in transcription",
+            "schema": {
+              "maxLength": 500,
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptionSearchMatchesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
+    "/videos/{id}/transcription/vtt": {
+      "get": {
+        "operationId": "getVtt",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-permission": "asset.view"
+      }
+    },
     "/view/folder": {
       "get": {
         "description": "Retrieve assets that are children of a specific folder.",
@@ -17313,6 +17604,9 @@
             "nullable": true,
             "type": "string"
           },
+          "content": {
+            "type": "string"
+          },
           "country": {
             "nullable": true,
             "type": "string"
@@ -17434,6 +17728,9 @@
             "type": "string"
           },
           "thumbnailPath": {
+            "type": "string"
+          },
+          "transcript": {
             "type": "string"
           },
           "trashedAfter": {
@@ -18661,6 +18958,7 @@
           "backupDatabase",
           "ocr",
           "documentExtraction",
+          "videoTranscription",
           "workflow"
         ],
         "type": "string"
@@ -18779,6 +19077,9 @@
           "videoConversion": {
             "$ref": "#/components/schemas/QueueResponseDto"
           },
+          "videoTranscription": {
+            "$ref": "#/components/schemas/QueueResponseDto"
+          },
           "workflow": {
             "$ref": "#/components/schemas/QueueResponseDto"
           }
@@ -18801,6 +19102,7 @@
           "storageTemplateMigration",
           "thumbnailGeneration",
           "videoConversion",
+          "videoTranscription",
           "workflow"
         ],
         "type": "object"
@@ -18816,6 +19118,9 @@
           },
           "city": {
             "nullable": true,
+            "type": "string"
+          },
+          "content": {
             "type": "string"
           },
           "country": {
@@ -18902,6 +19207,9 @@
           },
           "takenBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "transcript": {
             "type": "string"
           },
           "trashedAfter": {
@@ -19951,6 +20259,9 @@
             "nullable": true,
             "type": "string"
           },
+          "content": {
+            "type": "string"
+          },
           "country": {
             "nullable": true,
             "type": "string"
@@ -20049,6 +20360,9 @@
           },
           "takenBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "transcript": {
             "type": "string"
           },
           "trashedAfter": {
@@ -20159,6 +20473,9 @@
             "nullable": true,
             "type": "string"
           },
+          "content": {
+            "type": "string"
+          },
           "country": {
             "nullable": true,
             "type": "string"
@@ -20241,6 +20558,9 @@
           },
           "takenBefore": {
             "format": "date-time",
+            "type": "string"
+          },
+          "transcript": {
             "type": "string"
           },
           "trashedAfter": {
@@ -21681,6 +22001,9 @@
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "videoTranscription": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "workflow": {
             "$ref": "#/components/schemas/JobSettingsDto"
           }
@@ -21699,6 +22022,7 @@
           "smartSearch",
           "thumbnailGeneration",
           "videoConversion",
+          "videoTranscription",
           "workflow"
         ],
         "type": "object"
@@ -22649,6 +22973,149 @@
         ],
         "type": "string"
       },
+      "TranscriptionResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "duration": {
+            "description": "Total duration in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "language": {
+            "description": "Detected language code (e.g., en, es)",
+            "nullable": true,
+            "type": "string"
+          },
+          "segments": {
+            "description": "Transcription segments",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptionSegmentDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "duration",
+          "language",
+          "segments"
+        ],
+        "type": "object"
+      },
+      "TranscriptionSearchMatchDto": {
+        "properties": {
+          "endTime": {
+            "description": "End time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "matchEnd": {
+            "description": "Character offset where match ends in segment text",
+            "type": "integer"
+          },
+          "matchStart": {
+            "description": "Character offset where match starts in segment text",
+            "type": "integer"
+          },
+          "speaker": {
+            "description": "Speaker identifier",
+            "nullable": true,
+            "type": "string"
+          },
+          "startTime": {
+            "description": "Start time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "textSnippet": {
+            "description": "Text snippet with context around the match",
+            "type": "string"
+          }
+        },
+        "required": [
+          "endTime",
+          "matchEnd",
+          "matchStart",
+          "speaker",
+          "startTime",
+          "textSnippet"
+        ],
+        "type": "object"
+      },
+      "TranscriptionSearchMatchesResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "matches": {
+            "description": "List of matches",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptionSearchMatchDto"
+            },
+            "type": "array"
+          },
+          "searchTerm": {
+            "description": "Search term used",
+            "type": "string"
+          },
+          "totalMatches": {
+            "description": "Total number of matches found",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assetId",
+          "matches",
+          "searchTerm",
+          "totalMatches"
+        ],
+        "type": "object"
+      },
+      "TranscriptionSegmentDto": {
+        "properties": {
+          "endTime": {
+            "description": "End time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "speaker": {
+            "description": "Speaker identifier (e.g., SPEAKER_0)",
+            "nullable": true,
+            "type": "string"
+          },
+          "startTime": {
+            "description": "Start time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "text": {
+            "description": "Transcribed text",
+            "type": "string"
+          },
+          "words": {
+            "description": "Word-level timestamps",
+            "items": {
+              "$ref": "#/components/schemas/WordTimestampDto"
+            },
+            "nullable": true,
+            "type": "array"
+          }
+        },
+        "required": [
+          "endTime",
+          "speaker",
+          "startTime",
+          "text",
+          "words"
+        ],
+        "type": "object"
+      },
       "TrashResponseDto": {
         "properties": {
           "count": {
@@ -23300,6 +23767,36 @@
           "webm"
         ],
         "type": "string"
+      },
+      "WordTimestampDto": {
+        "properties": {
+          "confidence": {
+            "description": "Confidence score (0-1)",
+            "format": "double",
+            "type": "number"
+          },
+          "end": {
+            "description": "End time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "start": {
+            "description": "Start time in seconds",
+            "format": "double",
+            "type": "number"
+          },
+          "word": {
+            "description": "Word text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confidence",
+          "end",
+          "start",
+          "word"
+        ],
+        "type": "object"
       },
       "WorkflowActionItemDto": {
         "properties": {

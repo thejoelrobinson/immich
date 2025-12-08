@@ -1,7 +1,8 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import PdfViewer from '$lib/components/asset-viewer/pdf-viewer.svelte';
-  import DocumentSearchNav from '$lib/components/asset-viewer/document-search-nav.svelte';
+  import ContentSearchNav from '$lib/components/asset-viewer/content-search-nav.svelte';
+  import { documentSearchManager } from '$lib/stores/document-search.svelte';
   import { getAssetOriginalUrl } from '$lib/utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { LoadingSpinner } from '@immich/ui';
@@ -84,7 +85,10 @@
 <svelte:document onkeydown={handleKeydown} />
 
 <!-- Document search navigation bar -->
-<DocumentSearchNav />
+<ContentSearchNav
+  searchState={documentSearchManager}
+  onClose={() => documentSearchManager.clear()}
+/>
 
 {#if documentError}
   <div class="h-full w-full flex flex-col">

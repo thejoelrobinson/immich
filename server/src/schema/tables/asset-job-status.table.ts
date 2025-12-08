@@ -26,4 +26,7 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   documentTextExtractedAt!: Timestamp | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  transcriptionExtractedAt!: Timestamp | null;
 }

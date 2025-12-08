@@ -5,7 +5,7 @@
 
   interface Props {
     query: string | undefined;
-    queryType?: 'smart' | 'metadata' | 'description' | 'ocr';
+    queryType?: 'smart' | 'metadata' | 'description' | 'ocr' | 'content';
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
@@ -34,6 +34,7 @@
     {#if featureFlagsManager.value.ocr}
       <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
     {/if}
+    <RadioButton name="query-type" id="content-radio" label={$t('content')} bind:group={queryType} value="content" />
   </div>
 </fieldset>
 
@@ -79,5 +80,16 @@
     placeholder={$t('search_by_ocr_example')}
     bind:value={query}
     aria-labelledby="ocr-label"
+  />
+{:else if queryType === 'content'}
+  <label for="content-input" class="immich-form-label">{$t('search_by_content')}</label>
+  <input
+    class="immich-form-input hover:cursor-text w-full mt-1!"
+    type="text"
+    id="content-input"
+    name="content"
+    placeholder={$t('search_by_content_example')}
+    bind:value={query}
+    aria-labelledby="content-label"
   />
 {/if}

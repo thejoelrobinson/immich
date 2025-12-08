@@ -782,6 +782,7 @@ export type QueuesResponseDto = {
     storageTemplateMigration: QueueResponseDto;
     thumbnailGeneration: QueueResponseDto;
     videoConversion: QueueResponseDto;
+    videoTranscription: QueueResponseDto;
     workflow: QueueResponseDto;
 };
 export type JobCreateDto = {
@@ -1031,6 +1032,7 @@ export type MetadataSearchDto = {
     albumIds?: string[];
     checksum?: string;
     city?: string | null;
+    content?: string;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
@@ -1062,6 +1064,7 @@ export type MetadataSearchDto = {
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
+    transcript?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -1108,6 +1111,7 @@ export type PlacesResponseDto = {
 export type RandomSearchDto = {
     albumIds?: string[];
     city?: string | null;
+    content?: string;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
@@ -1129,6 +1133,7 @@ export type RandomSearchDto = {
     tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
+    transcript?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -1143,6 +1148,7 @@ export type RandomSearchDto = {
 export type SmartSearchDto = {
     albumIds?: string[];
     city?: string | null;
+    content?: string;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
@@ -1168,6 +1174,7 @@ export type SmartSearchDto = {
     tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
+    transcript?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -1180,6 +1187,7 @@ export type SmartSearchDto = {
 export type StatisticsSearchDto = {
     albumIds?: string[];
     city?: string | null;
+    content?: string;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
@@ -1201,6 +1209,7 @@ export type StatisticsSearchDto = {
     tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
+    transcript?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     "type"?: AssetTypeEnum;
@@ -1507,6 +1516,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    videoTranscription: JobSettingsDto;
     workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
@@ -1763,6 +1773,62 @@ export type CreateProfileImageResponseDto = {
     profileChangedAt: string;
     profileImagePath: string;
     userId: string;
+};
+export type WordTimestampDto = {
+    /** Confidence score (0-1) */
+    confidence: number;
+    /** End time in seconds */
+    end: number;
+    /** Start time in seconds */
+    start: number;
+    /** Word text */
+    word: string;
+};
+export type TranscriptionSegmentDto = {
+    /** End time in seconds */
+    endTime: number;
+    /** Speaker identifier (e.g., SPEAKER_0) */
+    speaker: string | null;
+    /** Start time in seconds */
+    startTime: number;
+    /** Transcribed text */
+    text: string;
+    /** Word-level timestamps */
+    words: WordTimestampDto[] | null;
+};
+export type TranscriptionResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** Total duration in seconds */
+    duration: number;
+    /** Detected language code (e.g., en, es) */
+    language: string | null;
+    /** Transcription segments */
+    segments: TranscriptionSegmentDto[];
+};
+export type TranscriptionSearchMatchDto = {
+    /** End time in seconds */
+    endTime: number;
+    /** Character offset where match ends in segment text */
+    matchEnd: number;
+    /** Character offset where match starts in segment text */
+    matchStart: number;
+    /** Speaker identifier */
+    speaker: string | null;
+    /** Start time in seconds */
+    startTime: number;
+    /** Text snippet with context around the match */
+    textSnippet: string;
+};
+export type TranscriptionSearchMatchesResponseDto = {
+    /** Asset ID */
+    assetId: string;
+    /** List of matches */
+    matches: TranscriptionSearchMatchDto[];
+    /** Search term used */
+    searchTerm: string;
+    /** Total number of matches found */
+    totalMatches: number;
 };
 export type WorkflowActionResponseDto = {
     actionConfig: object | null;
@@ -3851,9 +3917,10 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, content, country, createdAfter, createdBefore, deviceId, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, transcript, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
     albumIds?: string[];
     city?: string | null;
+    content?: string;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
@@ -3876,6 +3943,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     tagIds?: string[] | null;
     takenAfter?: string;
     takenBefore?: string;
+    transcript?: string;
     trashedAfter?: string;
     trashedBefore?: string;
     $type?: AssetTypeEnum;
@@ -3891,6 +3959,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     }>(`/search/large-assets${QS.query(QS.explode({
         albumIds,
         city,
+        content,
         country,
         createdAfter,
         createdBefore,
@@ -3913,6 +3982,7 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         tagIds,
         takenAfter,
         takenBefore,
+        transcript,
         trashedAfter,
         trashedBefore,
         "type": $type,
@@ -5114,6 +5184,73 @@ export function getProfileImage({ id }: {
         ...opts
     }));
 }
+export function getTranscription({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TranscriptionResponseDto;
+    }>(`/videos/${encodeURIComponent(id)}/transcription${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+export function hasTranscription({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/videos/${encodeURIComponent(id)}/transcription/available${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+export function regenerateTranscription({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/videos/${encodeURIComponent(id)}/transcription/regenerate`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+export function searchTranscription({ id, key, q, slug }: {
+    id: string;
+    key?: string;
+    q: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TranscriptionSearchMatchesResponseDto;
+    }>(`/videos/${encodeURIComponent(id)}/transcription/search${QS.query(QS.explode({
+        key,
+        q,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+export function getVtt({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string;
+    }>(`/videos/${encodeURIComponent(id)}/transcription/vtt${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
 /**
  * Retrieve assets by original path
  */
@@ -5481,6 +5618,7 @@ export enum QueueName {
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
     DocumentExtraction = "documentExtraction",
+    VideoTranscription = "videoTranscription",
     Workflow = "workflow"
 }
 export enum QueueCommand {

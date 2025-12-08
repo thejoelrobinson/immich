@@ -266,6 +266,7 @@
         searchPerformed = true;
 
         const matches = Array.from({ length: localMatchCount }, (_, i) => ({
+          type: 'document' as const,
           pageNumber: 1,
           textSnippet: term,
           matchStart: i,
@@ -340,6 +341,7 @@
 
         // Update the shared document search manager with matches
         const matches = Array.from({ length: localMatchCount }, (_, i) => ({
+          type: 'document' as const,
           pageNumber: 1,
           textSnippet: term,
           matchStart: i,

@@ -202,6 +202,10 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.DocumentTextExtractionQueueAll, data: { force } });
       }
 
+      case QueueName.VideoTranscription: {
+        return this.jobRepository.queue({ name: JobName.VideoTranscriptionQueueAll, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }

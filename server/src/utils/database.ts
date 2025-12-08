@@ -393,6 +393,31 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
         .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.ocr!})`),
     )
+    .$if(!!options.transcript, (qb) =>
+      qb
+        .innerJoin('transcription_segments', 'asset.id', 'transcription_segments.assetId')
+        .where(() => sql`f_unaccent(transcription_segments.text) %>> f_unaccent(${options.transcript!})`),
+    )
+    .$if(!!options.content, (qb) =>
+      qb.where((eb) =>
+        eb.or([
+          eb.exists(
+            eb
+              .selectFrom('ocr_search')
+              .select(sql.lit(1).as('one'))
+              .whereRef('ocr_search.assetId', '=', 'asset.id')
+              .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${options.content!})`),
+          ),
+          eb.exists(
+            eb
+              .selectFrom('transcription_segments')
+              .select(sql.lit(1).as('one'))
+              .whereRef('transcription_segments.assetId', '=', 'asset.id')
+              .where(() => sql`f_unaccent(transcription_segments.text) %>> f_unaccent(${options.content!})`),
+          ),
+        ]),
+      ),
+    )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))

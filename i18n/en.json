@@ -414,7 +414,9 @@
     "version_check_settings": "Version Check",
     "version_check_settings_description": "Enable/disable the new version notification",
     "video_conversion_job": "Transcode videos",
-    "video_conversion_job_description": "Transcode videos for wider compatibility with browsers and devices"
+    "video_conversion_job_description": "Transcode videos for wider compatibility with browsers and devices",
+    "video_transcription_job": "Video Transcription",
+    "video_transcription_job_description": "Transcribe video audio using AI for subtitle generation and searchable transcripts"
   },
   "admin_email": "Admin Email",
   "admin_password": "Admin Password",
@@ -1768,6 +1770,12 @@
   "search_by_filename_example": "i.e. IMG_1234.JPG or PNG",
   "search_by_ocr": "Search by OCR",
   "search_by_ocr_example": "Latte",
+  "search_by_transcript": "Search by video transcript",
+  "search_by_transcript_example": "quarterly review",
+  "transcript": "Transcript",
+  "content": "Content",
+  "search_by_content": "Search by content",
+  "search_by_content_example": "meeting notes",
   "search_camera_lens_model": "Search lens model...",
   "search_camera_make": "Search camera make...",
   "search_camera_model": "Search camera model...",
