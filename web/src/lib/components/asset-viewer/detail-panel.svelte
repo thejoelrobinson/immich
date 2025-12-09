@@ -5,6 +5,7 @@
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
   import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
   import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
+  import DetailPanelTranscription from '$lib/components/asset-viewer/detail-panel-transcription.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -19,7 +20,7 @@
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { getParentPath } from '$lib/utils/tree-utils';
-  import { AssetMediaSize, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, getAssetInfo, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
   import { Icon, IconButton, LoadingSpinner, modalManager } from '@immich/ui';
   import {
     mdiCalendar,
@@ -45,9 +46,13 @@
     albums?: AlbumResponseDto[];
     currentAlbum?: AlbumResponseDto | null;
     onClose: () => void;
+    // Transcription props for video assets
+    currentVideoTime?: number;
+    onTranscriptionSeek?: (time: number) => void;
+    hasTranscription?: boolean;
   }
 
-  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
+  let { asset, albums = [], currentAlbum = null, onClose, currentVideoTime = 0, onTranscriptionSeek, hasTranscription = false }: Props = $props();
 
   let showAssetPath = $state(false);
   let showEditFaces = $state(false);
@@ -436,6 +441,14 @@
 
     <DetailPanelLocation {isOwner} {asset} />
   </div>
+
+  {#if asset.type === AssetTypeEnum.Video && hasTranscription}
+    <DetailPanelTranscription
+      assetId={asset.id}
+      currentTime={currentVideoTime}
+      onSeek={onTranscriptionSeek}
+    />
+  {/if}
 </section>
 
 {#if latlng && featureFlagsManager.value.map}
