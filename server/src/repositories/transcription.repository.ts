@@ -24,6 +24,7 @@ export interface SegmentMatch {
   endTime: number;
   speaker: string | null;
   text: string;
+  words: string | null;
 }
 
 @Injectable()
@@ -60,7 +61,7 @@ export class TranscriptionRepository {
     // Use case-insensitive search with ILIKE
     return this.db
       .selectFrom('transcription_segments')
-      .select(['startTime', 'endTime', 'speaker', 'text'])
+      .select(['startTime', 'endTime', 'speaker', 'text', 'words'])
       .where('assetId', '=', assetId)
       .where('text', 'ilike', pattern)
       .orderBy('startTime', 'asc')

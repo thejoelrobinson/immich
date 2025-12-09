@@ -64,6 +64,9 @@ export class TranscriptionSearchMatchDto {
 
   @ApiProperty({ type: 'integer', description: 'Character offset where match ends in segment text' })
   matchEnd!: number;
+
+  @ApiProperty({ type: 'number', format: 'double', nullable: true, description: 'Exact word start time for precise seeking (null if word timing unavailable)' })
+  wordStartTime!: number | null;
 }
 
 export class TranscriptionSearchMatchesResponseDto {

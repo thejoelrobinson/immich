@@ -20,6 +20,7 @@ export interface TranscriptionMatch extends ContentSearchMatch {
   startTime: number;
   endTime: number;
   speaker: string | null;
+  wordStartTime: number | null;
 }
 
 export type AnyContentMatch = DocumentMatch | TranscriptionMatch;

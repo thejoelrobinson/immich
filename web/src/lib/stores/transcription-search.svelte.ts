@@ -9,6 +9,7 @@ export interface TranscriptionSearchMatch {
   speaker: string | null;
   matchStart: number;
   matchEnd: number;
+  wordStartTime: number | null;
 }
 
 class TranscriptionSearchManager {

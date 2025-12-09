@@ -126,6 +126,10 @@
         payload = { ocr: value } as MetadataSearchDto;
         break;
       }
+      case 'content': {
+        payload = { content: value } as MetadataSearchDto;
+        break;
+      }
     }
 
     handlePromiseError(handleSearch(payload));
@@ -179,7 +183,8 @@
       case 'smart':
       case 'metadata':
       case 'description':
-      case 'ocr': {
+      case 'ocr':
+      case 'content': {
         return searchType;
       }
       default: {
@@ -202,6 +207,9 @@
       }
       case 'ocr': {
         return $t('ocr');
+      }
+      case 'content': {
+        return $t('content');
       }
     }
   }

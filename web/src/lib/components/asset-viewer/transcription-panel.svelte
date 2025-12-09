@@ -3,12 +3,19 @@
   import { mdiAccountVoice, mdiClose } from '@mdi/js';
   import { Icon, LoadingSpinner } from '@immich/ui';
 
+  interface WordTimestamp {
+    word: string;
+    start: number;
+    end: number;
+    confidence: number;
+  }
+
   interface TranscriptionSegment {
-    id: string;
     speaker: string | null;
     startTime: number;
     endTime: number;
     text: string;
+    words: WordTimestamp[] | null;
   }
 
   interface Props {
@@ -47,10 +54,41 @@
     return speakerColorMap.get(speaker)!;
   }
 
+  // Binary search to find the active word index based on current time
+  function findActiveWordIndex(words: WordTimestamp[], time: number): number {
+    if (!words || words.length === 0) return -1;
+
+    let low = 0;
+    let high = words.length - 1;
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const word = words[mid];
+
+      if (time >= word.start && time < word.end) {
+        return mid;
+      } else if (time < word.start) {
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    }
+
+    return -1;
+  }
+
   // Find the current active segment based on video time
   const activeSegmentIndex = $derived(
     segments.findIndex((seg) => currentTime >= seg.startTime && currentTime < seg.endTime)
   );
+
+  // Find the active word within the active segment for karaoke highlighting
+  const activeWordIndex = $derived.by(() => {
+    if (activeSegmentIndex < 0) return -1;
+    const segment = segments[activeSegmentIndex];
+    if (!segment?.words) return -1;
+    return findActiveWordIndex(segment.words, currentTime);
+  });
 
   // Auto-scroll to active segment
   $effect(() => {
@@ -71,7 +109,9 @@
     speakerColorMap.clear();
 
     try {
-      const response = await fetch(`/api/videos/${id}/transcription`);
+      const response = await fetch(`/api/videos/${id}/transcription`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         if (response.status === 404) {
           error = 'No transcription available for this video.';
@@ -82,6 +122,13 @@
       }
 
       const data = await response.json();
+      console.log('[Karaoke Debug] API response:', {
+        segmentCount: data.segments?.length,
+        firstSegmentHasWords: !!data.segments?.[0]?.words,
+        firstSegmentWordsType: typeof data.segments?.[0]?.words,
+        firstSegmentWordsLength: data.segments?.[0]?.words?.length,
+        firstTwoWords: data.segments?.[0]?.words?.slice(0, 2)
+      });
       segments = data.segments || [];
     } catch (err) {
       console.error('Failed to load transcription:', err);
@@ -128,7 +175,7 @@
         <p>No transcript segments found.</p>
       </div>
     {:else}
-      {#each segments as segment, index (segment.id)}
+      {#each segments as segment, index (segment.startTime)}
         <button
           data-segment-index={index}
           onclick={() => handleSegmentClick(segment)}
@@ -148,7 +195,21 @@
             {/if}
           </div>
           <p class="text-sm text-gray-200 leading-relaxed">
-            {segment.text}
+            {#if segment.words && segment.words.length > 0}
+              {#each segment.words as word, wordIdx}
+                <span
+                  class="transition-colors duration-75 cursor-pointer hover:underline
+                         {index === activeSegmentIndex && wordIdx === activeWordIndex
+                           ? 'text-yellow-400 font-medium' : ''}"
+                  onclick={(e) => { e.stopPropagation(); onSeek?.(word.start); }}
+                  role="button"
+                  tabindex="0"
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onSeek?.(word.start); } }}
+                >{word.word}{' '}</span>
+              {/each}
+            {:else}
+              {segment.text}
+            {/if}
           </p>
         </button>
       {/each}

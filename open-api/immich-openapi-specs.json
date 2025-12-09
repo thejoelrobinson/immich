@@ -23034,6 +23034,12 @@
           "textSnippet": {
             "description": "Text snippet with context around the match",
             "type": "string"
+          },
+          "wordStartTime": {
+            "description": "Exact word start time for precise seeking (null if word timing unavailable)",
+            "format": "double",
+            "nullable": true,
+            "type": "number"
           }
         },
         "required": [
@@ -23042,7 +23048,8 @@
           "matchStart",
           "speaker",
           "startTime",
-          "textSnippet"
+          "textSnippet",
+          "wordStartTime"
         ],
         "type": "object"
       },

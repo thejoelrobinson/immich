@@ -52,6 +52,7 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import ContentSearchNav from './content-search-nav.svelte';
+  import TranscriptionPanel from './transcription-panel.svelte';
   import { transcriptionSearchManager } from '$lib/stores/transcription-search.svelte';
   import { isTranscriptionMatch, type AnyContentMatch } from '$lib/stores/content-search.svelte';
 
@@ -123,6 +124,7 @@
 
   // Transcription state
   let hasTranscription = $state(false);
+  let showTranscriptionPanel = $state(false);
   let showTranscriptionSearch = $state(false);
   let transcriptionSearchInput = $state('');
   let videoViewerRef: VideoViewer | undefined = $state();
@@ -486,7 +488,9 @@
 
   function handleTranscriptionSearchNavigate(match: AnyContentMatch) {
     if (isTranscriptionMatch(match)) {
-      videoViewerRef?.seekTo(match.startTime);
+      // Prefer word-level timing for precise karaoke seeking
+      const seekTime = match.wordStartTime ?? match.startTime;
+      videoViewerRef?.seekTo(seekTime);
     }
   }
 
@@ -698,7 +702,7 @@
           </div>
         {/if}
 
-        <!-- Transcription search button for videos -->
+        <!-- Transcription buttons for videos -->
         {#if $slideshowState === SlideshowState.None && asset.type === AssetTypeEnum.Video && hasTranscription && !isShowEditor}
           <div class="absolute bottom-0 end-0 mb-6 me-6 flex flex-col gap-2 items-end">
             {#if showTranscriptionSearch}
@@ -721,16 +725,30 @@
                 </button>
               </div>
             {/if}
-            <button
-              onclick={toggleTranscriptionSearch}
-              class="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-full transition-colors text-white"
-              title={showTranscriptionSearch ? 'Close search' : 'Search transcription (Ctrl+F)'}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
-                <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
-              </svg>
-            </button>
+            <div class="flex gap-2">
+              <!-- Toggle transcript panel button -->
+              <button
+                onclick={() => showTranscriptionPanel = !showTranscriptionPanel}
+                class="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-full transition-colors {showTranscriptionPanel ? 'text-blue-400' : 'text-white'}"
+                title={showTranscriptionPanel ? 'Hide transcript' : 'Show transcript'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/>
+                  <path d="M8 12h8v2H8zm0 4h8v2H8z"/>
+                </svg>
+              </button>
+              <!-- Search transcription button -->
+              <button
+                onclick={toggleTranscriptionSearch}
+                class="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-full transition-colors text-white"
+                title={showTranscriptionSearch ? 'Close search' : 'Search transcription (Ctrl+F)'}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                  <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+                </svg>
+              </button>
+            </div>
           </div>
         {/if}
       {/key}
@@ -752,6 +770,16 @@
     >
       <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
     </div>
+  {/if}
+
+  <!-- Transcription Panel for videos with karaoke highlighting -->
+  {#if showTranscriptionPanel && asset.type === AssetTypeEnum.Video && hasTranscription}
+    <TranscriptionPanel
+      assetId={asset.id}
+      currentTime={currentVideoTime}
+      onSeek={handleTranscriptionSeek}
+      onClose={() => showTranscriptionPanel = false}
+    />
   {/if}
 
   {#if isShowEditor}

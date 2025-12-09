@@ -46,12 +46,19 @@ export class TranscriptionService extends BaseService {
     const duration = segments.length > 0 ? Math.max(...segments.map((s) => s.endTime)) : 0;
 
     const formattedSegments: TranscriptionSegmentDto[] = segments.map((seg) => {
+      // JSONB columns are automatically parsed by Kysely, so seg.words is already an object
+      // Handle both cases: already-parsed object or JSON string (for backwards compatibility)
       let words: WordTimestampDto[] | null = null;
       if (seg.words) {
-        try {
-          words = JSON.parse(seg.words as string) as WordTimestampDto[];
-        } catch {
-          words = null;
+        if (typeof seg.words === 'string') {
+          try {
+            words = JSON.parse(seg.words) as WordTimestampDto[];
+          } catch {
+            words = null;
+          }
+        } else {
+          // Already parsed by Kysely (JSONB)
+          words = seg.words as unknown as WordTimestampDto[];
         }
       }
 
@@ -91,10 +98,39 @@ export class TranscriptionService extends BaseService {
       const textLower = segment.text.toLowerCase();
       let startIndex = 0;
 
+      // Parse words array for word-level timing
+      // JSONB columns are automatically parsed by Kysely
+      let words: WordTimestampDto[] | null = null;
+      if (segment.words) {
+        if (typeof segment.words === 'string') {
+          try {
+            words = JSON.parse(segment.words) as WordTimestampDto[];
+          } catch {
+            words = null;
+          }
+        } else {
+          words = segment.words as unknown as WordTimestampDto[];
+        }
+      }
+
       while ((startIndex = textLower.indexOf(searchLower, startIndex)) !== -1) {
         // Extract snippet with context (~30 chars before and after)
         const snippetStart = Math.max(0, startIndex - 30);
         const snippetEnd = Math.min(segment.text.length, startIndex + searchTerm.length + 30);
+
+        // Find the word containing the match start position
+        let wordStartTime: number | null = null;
+        if (words) {
+          let charIndex = 0;
+          for (const word of words) {
+            const wordEnd = charIndex + word.word.length;
+            if (startIndex >= charIndex && startIndex < wordEnd) {
+              wordStartTime = word.start;
+              break;
+            }
+            charIndex = wordEnd + 1; // +1 for space between words
+          }
+        }
 
         matches.push({
           startTime: segment.startTime,
@@ -103,6 +139,7 @@ export class TranscriptionService extends BaseService {
           speaker: segment.speaker,
           matchStart: startIndex,
           matchEnd: startIndex + searchTerm.length,
+          wordStartTime,
         });
 
         startIndex += searchTerm.length;
