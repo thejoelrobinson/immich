@@ -13,6 +13,8 @@ services:
   immich-server:
     container_name: immich_server
     image: immich-server:latest
+    # Install poppler-utils for PDF thumbnail rendering, libreoffice for Office docs, MS-compatible fonts for better rendering
+    command: ["apt-get update -qq && apt-get install -y -qq poppler-utils libreoffice-writer libreoffice-calc libreoffice-impress fonts-crosextra-carlito fonts-crosextra-caladea fonts-liberation --no-install-recommends && exec start.sh"]
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -72,7 +74,8 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      # Use Docker named volume for macOS compatibility (avoid permission issues)
+      - postgres-prod-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     shm_size: 128mb
@@ -99,7 +102,70 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  # ONLYOFFICE Document Server for Office document viewing
+  onlyoffice:
+    container_name: immich_onlyoffice
+    # Unlimited connections community build (official has 20-connection limit)
+    image: thomisus/onlyoffice-documentserver-unlimited:latest
+    environment:
+      # JWT authentication for secure document access
+      JWT_ENABLED: "true"
+      JWT_SECRET: ${ONLYOFFICE_JWT_SECRET:-immich-onlyoffice-dev-secret}
+      JWT_HEADER: Authorization
+      # Disable WOPI - we use direct URL access
+      WOPI_ENABLED: "false"
+      # Allow internal network access for document downloads
+      ALLOW_PRIVATE_IP_ADDRESS: "true"
+      ALLOW_META_IP_ADDRESS: "true"
+    ports:
+      - 8080:80
+    volumes:
+      - onlyoffice-data:/var/www/onlyoffice/Data
+      - onlyoffice-logs:/var/log/onlyoffice
+      # Init script to increase file size limits (100MB -> 500MB) and register custom fonts
+      - ./onlyoffice-init.sh:/onlyoffice-init.sh:ro
+      # Custom corporate fonts (Bogle, EverydaySans)
+      - ../Fonts:/custom-fonts:ro
+    # Override entrypoint to run our init script before ONLYOFFICE starts
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["/onlyoffice-init.sh & exec /app/ds/run-document-server.sh"]
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Video Transcription Service (faster-whisper + speechbrain for speaker diarization)
+  immich-transcription:
+    container_name: immich_transcription
+    build:
+      context: ../transcription
+      dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu  # set to 'cuda' for GPU acceleration
+    ports:
+      - 3004:3004
+    volumes:
+      - ${UPLOAD_LOCATION}/photos:/data:ro
+      - transcription-model-cache:/cache
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      DEVICE: ${TRANSCRIPTION_DEVICE:-cpu}
+      DIARIZATION_ENABLED: ${TRANSCRIPTION_DIARIZATION:-true}
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3004/ping')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
 volumes:
   model-cache:
+  transcription-model-cache:
+  onlyoffice-data:
+  onlyoffice-logs:
   prometheus-data:
   grafana-data:
+  postgres-prod-data:
