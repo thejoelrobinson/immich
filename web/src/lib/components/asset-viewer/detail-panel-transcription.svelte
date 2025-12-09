@@ -210,7 +210,7 @@
                     role="button"
                     tabindex="0"
                     onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); onSeek?.(word.start); } }}
-                  >{word.word}{' '}</span>
+                  >{word.word}</span>{' '} <!-- eslint-disable-line svelte/no-useless-mustaches -->
                 {/each}
               {:else}
                 {segment.text}
